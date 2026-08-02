@@ -1,6 +1,6 @@
 {
   "name": "mcp-flutter-apk-injector",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Model Context Protocol (MCP) server for automated Android APK reverse engineering, Smali bytecode refactoring, and Flutter runtime payload injection.",
   "type": "module",
   "main": "dist/index.js",

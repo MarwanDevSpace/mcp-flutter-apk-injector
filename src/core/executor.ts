@@ -1,5 +1,5 @@
 import { spawn } from "node:child_process";
-import { mkdir, access } from "node:fs/promises";
+import { mkdir, access, stat } from "node:fs/promises";
 import { constants as fsConstants } from "node:fs";
 import path from "node:path";
 import { homedir } from "node:os";
@@ -63,6 +63,8 @@ function isBareName(name: string): boolean {
 
 async function isExecutable(filePath: string): Promise<boolean> {
   try {
+    const s = await stat(filePath);
+    if (!s.isFile()) return false;
     await access(filePath, fsConstants.X_OK);
     return true;
   } catch {
@@ -121,7 +123,7 @@ export async function resolveBuildToolsBinary(name: string, envVar = "ANDROID_HO
     }
   }
   // Fall back to PATH / default locations.
-  return resolveExecutable(name, envVar);
+  return resolveExecutable(name);
 }
 
 async function listSubdirs(dir: string): Promise<string[]> {
