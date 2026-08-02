@@ -39,13 +39,31 @@ describe("server", () => {
     }
   });
 
-  it("registers agent prompts for /scan, /inject, /patch, /recompile commands", () => {
-    const server = createServer() as unknown as { _registeredPrompts: Record<string, unknown> };
+  it("registers agent prompts and handles zero-arg invocations cleanly", async () => {
+    const server = createServer() as unknown as {
+      _registeredPrompts: Record<
+        string,
+        {
+          callback: (args: Record<string, unknown>) => Promise<{
+            messages: Array<{ content: { text: string } }>;
+          }>;
+        }
+      >;
+    };
     const promptNames = Object.keys(server._registeredPrompts);
     expect(promptNames).toContain("scan");
+    expect(promptNames).toContain("decompile");
     expect(promptNames).toContain("inject");
     expect(promptNames).toContain("patch");
     expect(promptNames).toContain("recompile");
+
+    // Verify zero-argument invocation works without throwing
+    for (const name of promptNames) {
+      const promptObj = server._registeredPrompts[name];
+      expect(promptObj).toBeTruthy();
+      const res = await promptObj!.callback({});
+      expect(res.messages[0]?.content.text).toBeTruthy();
+    }
   });
 });
 
