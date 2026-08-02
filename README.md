@@ -1,103 +1,63 @@
 # mcp-flutter-apk-injector
 
-Model Context Protocol (MCP) server for **Android APK reverse engineering and
-Flutter runtime injection** — a white-hat security research / testing toolkit
-that exposes a full decompile → analyze → inject → repackage pipeline as six
-MCP tools.
+[![npm version](https://img.shields.io/npm/v/mcp-flutter-apk-injector.svg?color=blue)](https://www.npmjs.com/package/mcp-flutter-apk-injector)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Node.js](https://img.shields.io/badge/node-%3E%3D18.0.0-green.svg)](https://nodejs.org/)
+[![Model Context Protocol](https://img.shields.io/badge/MCP-1.30.0-purple.svg)](https://modelcontextprotocol.io)
+[![GitHub Repository](https://img.shields.io/badge/GitHub-MarwanDevSpace-black?logo=github)](https://github.com/MarwanDevSpace/mcp-flutter-apk-injector)
 
-> **Scope.** This project is intended for security researchers, penetration
-> testers and app owners analyzing **their own** APKs. Repackaging third-party
-> applications without permission is illegal in most jurisdictions. You are
-> responsible for using this tool lawfully.
+Model Context Protocol (MCP) server for **Android APK reverse engineering and Flutter runtime injection** — an automated, enterprise-grade white-hat security research & penetration testing toolkit exposing a complete **Decompile ➔ Analyze ➔ Synthesize ➔ Inject ➔ Patch ➔ Repackage** pipeline as six modular MCP tools.
 
-## How it works
+---
 
-The pipeline mirrors the official Flutter "add to app" v2 embedding to inject
-a **fresh Flutter engine** into a native APK without touching its original
-code paths:
+> 🔒 **Scope & Compliance Statement**  
+> This project is designed exclusively for security researchers, mobile auditors, and application owners auditing **their own** binaries or authorized targets. Repackaging third-party applications without explicit authorization is prohibited. You are responsible for using this tool lawfully.
 
-1. **Decompile** the APK with `apktool` (source + binary `AndroidManifest.xml`
-   decoding, ABI detection).
-2. **Analyze** the injection surface: original application class, launcher
-   activity, JNI entry points, `libflutter.so` presence, minSdk/targetSdk.
-3. **Synthesize** a payload by building a Flutter app (`flutter build apk`) and
-   extracting `libflutter.so`, `libapp.so` and `flutter_assets`.
-4. **Inject** generated Smali classes (`InjectedApplication`,
-   `FlutterOverlayActivity`, `InjectedFlutterBootstrap`,
-   `InjectedChannelHandler`) plus the Flutter runtime, then hook the launcher
-   activity's `onCreate` to attach a `FlutterView`.
-5. **Patch** the manifest: custom application class, permissions,
-   `usesCleartextTraffic`, meta-data, overlay activity registration.
-6. **Recompile** (`apktool b`), **align** (`zipalign`), **sign**
-   (`apksigner`, with automatic debug keystore generation).
+---
 
-The engine is created once in `InjectedApplication.onCreate()`, cached in
-`FlutterEngineCache`, and reused by the overlay activity via `getCachedEngineId()`
-(the Flutter `FlutterActivityAndFragmentDelegate` does **not** re-execute Dart
-for cached engines).
+## 🚀 Quick Start & Installation
 
-## Tools
+You can run `mcp-flutter-apk-injector` directly via `npx` (no manual build required), or install it globally:
 
-| Tool | Description |
-| --- | --- |
-| `decompile_apk` | Decompile an APK with apktool into a working directory |
-| `analyze_injection_surface` | Scan a decompiled workspace for injection points (application class, launcher, JNI hooks, ABIs) |
-| `synthesize_flutter_payload` | Build a Flutter app and extract `libflutter.so`/`libapp.so`/`flutter_assets` |
-| `inject_flutter_runtime_and_smali` | Generate and deploy Smali classes + Flutter runtime into the workspace |
-| `patch_manifest_and_config` | Rewrite `AndroidManifest.xml` (application class, permissions, activities, meta-data) |
-| `recompile_align_and_sign` | `apktool b` → `zipalign` → `apksigner`, generating a debug keystore if needed |
-
-### Parameters (all fields required unless marked optional)
-
-- **decompile_apk**: `apkPath`, `outputDir`, `decompileSources?`
-- **analyze_injection_surface**: `workspaceDir`
-- **synthesize_flutter_payload**: `flutterProjectPath`, `targetAbis?` (`arm64-v8a`, `armeabi-v7a`, `x86`, `x86_64`), `buildMode?` (`release`|`profile`|`debug`), `outputDir?`
-- **inject_flutter_runtime_and_smali**: `workspaceDir`, `payloadDir`, `injectionMode` (`activity_overlay`|`view_tree_injection`|`headless_engine`), `methodChannelBridge?` (`channelName`, `handlerClass`, `methodWhitelist`), `engineId?`
-- **patch_manifest_and_config**: `workspaceDir`, `customApplicationClass?`, `additionalPermissions?`, `usesCleartextTraffic?`
-- **recompile_align_and_sign**: `workspaceDir`, `outputApkPath`, `keystoreConfig?` (`keystorePath`, `keystorePass`, `keyAlias`, `keyPass`, `cn`)
-
-## Requirements
-
-- **Node.js >= 18**
-- **Java** (for apktool and the signing chain)
-- **Android SDK build-tools** (for `zipalign` / `apksigner`) — auto-discovered
-  from `ANDROID_HOME` / `ANDROID_SDK_ROOT`, PATH, or default install locations
-- **apktool** on PATH (or configured)
-- **Flutter SDK** (only for `synthesize_flutter_payload`)
-
-## Install & run
+### 📦 Global NPM Install
 
 ```bash
-npm install
-npm run build
-node dist/index.js
+npm install -g mcp-flutter-apk-injector
 ```
 
-Or install globally and use the `mcp-flutter-apk-injector` binary.
+### ⚡ Running via `npx`
 
-### Claude Desktop
+```bash
+npx -y mcp-flutter-apk-injector
+```
 
-Add to your `claude_desktop_config.json`:
+---
+
+## 🛠️ MCP Client Setup
+
+### Claude Desktop Configuration
+
+Add the following block to your `claude_desktop_config.json`:
 
 ```json
 {
   "mcpServers": {
-    "flutter-apk-injector": {
-      "command": "node",
-      "args": ["C:/path/to/mcp-flutter-apk-injector/dist/index.js"]
+    "mcp-flutter-apk-injector": {
+      "command": "npx",
+      "args": ["-y", "mcp-flutter-apk-injector@latest"]
     }
   }
 }
 ```
 
-### Generic MCP client (stdio)
+### Antigravity IDE / Generic MCP Client (`stdio`)
 
 ```json
 {
   "mcpServers": {
-    "flutter-apk-injector": {
-      "command": "node",
-      "args": ["C:/path/to/mcp-flutter-apk-injector/dist/index.js"],
+    "mcp-flutter-apk-injector": {
+      "command": "npx",
+      "args": ["-y", "mcp-flutter-apk-injector@latest"],
       "env": {
         "MCP_FLUTTER_LOG_LEVEL": "info"
       }
@@ -106,44 +66,66 @@ Add to your `claude_desktop_config.json`:
 }
 ```
 
-## Scripts
+---
+
+## 🧠 How it Works
+
+The pipeline mirrors the official Flutter "Add-to-App" v2 embedding model to attach a **fresh Flutter runtime engine** into target native Android APKs without breaking original application code execution paths:
+
+1. **Decompile (`decompile_apk`)**: Invokes `apktool` with framework-aware options, decodes binary AXML, and maps DEX/Smali structures.
+2. **Analyze (`analyze_injection_surface`)**: Scans entry Activity classes, Application sub-classes, register frame allocations (`v0`-`vN`, `p0`-`pN`), native JNI boundaries, and ABI architectures (`arm64-v8a`, `armeabi-v7a`, `x86`, `x86_64`).
+3. **Synthesize (`synthesize_flutter_payload`)**: Compiles Flutter payload sources and extracts `libflutter.so`, `libapp.so`, and `flutter_assets`.
+4. **Inject (`inject_flutter_runtime_and_smali`)**: Generates structure-safe Smali classes (`InjectedApplication`, `FlutterOverlayActivity`, `InjectedFlutterBootstrap`, `InjectedChannelHandler`) with strict stack preservation and hooks the target Activity's `onCreate`.
+5. **Patch (`patch_manifest_and_config`)**: Refactors `AndroidManifest.xml` (AXML/XML) for custom application classes, hardware acceleration, permissions, and overlay activities.
+6. **Repackage (`recompile_align_and_sign`)**: Rebuilds (`apktool b`), aligns (`zipalign`), and cryptographically signs (`apksigner`) with automatic debug keystore fallback.
+
+---
+
+## 🛠️ Tools Exposed
+
+| Tool | Description |
+| --- | --- |
+| `decompile_apk` | Decompiles target Android APK using `apktool` into an isolated workspace directory |
+| `analyze_injection_surface` | Scans decompiled workspace for entry Activities, application classes, Smali methods, and ABIs |
+| `synthesize_flutter_payload` | Builds Flutter application assets (`libflutter.so`, `libapp.so`, `flutter_assets`) |
+| `inject_flutter_runtime_and_smali` | Allocates Smali register frames and deploys Flutter runtime into target APK workspace |
+| `patch_manifest_and_config` | Modifies `AndroidManifest.xml` (custom Application, permissions, activities, metadata) |
+| `recompile_align_and_sign` | Rebuilds (`apktool b`), byte-aligns (`zipalign`), and signs (`apksigner`) target APK |
+
+---
+
+## 💻 Requirements
+
+- **Node.js >= 18.0.0**
+- **Java Runtime / JDK** (required by `apktool` and signing tools)
+- **Android SDK Build-Tools** (`zipalign`, `apksigner` — auto-discovered from `ANDROID_HOME` or system PATH)
+- **apktool** installed on system PATH
+- **Flutter SDK** (required only when invoking `synthesize_flutter_payload`)
+
+---
+
+## 🧪 Development & Testing
 
 ```bash
-npm run build          # tsc compile -> dist/
-npm run dev            # tsx watch src/index.ts
-npm run typecheck      # tsc --noEmit
-npm run lint           # eslint (flat config)
-npm test               # vitest run (unit)
-npm run test:unit      # vitest run test/unit
-npm run test:integration
+# Install local dependencies
+npm install
+
+# Build TypeScript to dist/
+npm run build
+
+# Typecheck without emitting
+npm run typecheck
+
+# Code formatting & lint check
+npm run lint
+
+# Execute Vitest suite (35 unit tests)
+npm test
 ```
 
-## Repository layout
+---
 
-```
-src/
-  core/          errors, logger, process executor, file utils, orchestrator
-  decompiler/    binary AXML parser, manifest parser, apktool wrapper, analyzer
-  smali/         descriptors, register allocator, templates, generator, transformer
-  payload/       flutter payload builder + deploy
-  manifest/      manifest patcher
-  packaging/     rebuild / zipalign / apksigner
-  tools/         zod schemas + six MCP tool handlers
-  server.ts      MCP server + registration
-  index.ts       entry point
-test/
-  unit/          unit tests (7 files, 35 tests)
-  fixtures/      sample AndroidManifest.xml, smali samples
-```
+## 📜 License
 
-## Notes / caveats
+[MIT License](LICENSE) © 2026 [Marwan (MarwanDevSpace)](https://github.com/MarwanDevSpace)
 
-- The binary AXML parser is dependency-free and used to analyze manifests
-  before apktool runs; apktool still owns the authoritative decode.
-- On Windows, `.bat`/`.cmd` build-tools wrappers are launched via `cmd.exe`.
-- Register allocation bumps `.locals`/`.registers` in hooked methods and
-  validates Smali structure before writing to disk.
-
-## License
-
-MIT
