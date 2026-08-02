@@ -15,5 +15,8 @@ export async function patchManifest(
     engineId: "injected_flutter_engine",
     additionalPermissions: params.additionalPermissions,
     usesCleartextTraffic: params.usesCleartextTraffic,
+    extractNativeLibs: params.extractNativeLibs,
+    hardwareAccelerated: params.hardwareAccelerated,
+    largeHeap: params.largeHeap,
   });
 }

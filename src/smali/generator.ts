@@ -13,7 +13,7 @@ import {
   type InjectionTemplateConfig,
 } from "./templates.js";
 import { classToDescriptor } from "./descriptors.js";
-import type { MethodChannelBridgeConfig } from "../types.js";
+import type { InjectionMode, MethodChannelBridgeConfig } from "../types.js";
 
 export interface GeneratedClass {
   className: string;
@@ -35,7 +35,7 @@ export interface SmaliGenerationOptions {
   smaliRoot: string;
   engineId: string;
   applicationSuperClass?: string | null;
-  injectionModes: Array<"activity_overlay" | "view_tree_injection" | "headless_engine">;
+  injectionModes: InjectionMode[];
   channel?: MethodChannelBridgeConfig;
   classNamePrefix?: string;
 }

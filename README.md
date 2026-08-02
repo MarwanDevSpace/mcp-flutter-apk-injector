@@ -6,7 +6,7 @@
 [![Model Context Protocol](https://img.shields.io/badge/MCP-1.30.0-purple.svg)](https://modelcontextprotocol.io)
 [![GitHub Repository](https://img.shields.io/badge/GitHub-MarwanDevSpace-black?logo=github)](https://github.com/MarwanDevSpace/mcp-flutter-apk-injector)
 
-Model Context Protocol (MCP) server for **Android APK reverse engineering and Flutter runtime injection** — an automated, enterprise-grade white-hat security research & penetration testing toolkit exposing a complete **Decompile ➔ Analyze ➔ Synthesize ➔ Inject ➔ Patch ➔ Repackage** pipeline as six modular MCP tools.
+Model Context Protocol (MCP) server for **Android APK reverse engineering and Flutter runtime injection** — an automated, enterprise-grade white-hat security research & penetration testing toolkit exposing a complete **Decompile ➔ Analyze ➔ Synthesize ➔ Inject ➔ Patch ➔ Repackage** pipeline as six modular MCP tools and agent prompt triggers.
 
 ---
 
@@ -28,7 +28,7 @@ npm install -g mcp-flutter-apk-injector
 ### ⚡ Running via `npx`
 
 ```bash
-npx -y mcp-flutter-apk-injector
+npx -y mcp-flutter-apk-injector@latest
 ```
 
 ---
@@ -68,39 +68,48 @@ Add the following block to your `claude_desktop_config.json`:
 
 ---
 
-## 🧠 How it Works
+## ⚡ Agent Prompts & Slash Commands
 
-The pipeline mirrors the official Flutter "Add-to-App" v2 embedding model to attach a **fresh Flutter runtime engine** into target native Android APKs without breaking original application code execution paths:
+`mcp-flutter-apk-injector` registers native MCP Prompts for AI desktop agents (Antigravity IDE, Claude Desktop, Cursor):
 
-1. **Decompile (`decompile_apk`)**: Invokes `apktool` with framework-aware options, decodes binary AXML, and maps DEX/Smali structures.
-2. **Analyze (`analyze_injection_surface`)**: Scans entry Activity classes, Application sub-classes, register frame allocations (`v0`-`vN`, `p0`-`pN`), native JNI boundaries, and ABI architectures (`arm64-v8a`, `armeabi-v7a`, `x86`, `x86_64`).
-3. **Synthesize (`synthesize_flutter_payload`)**: Compiles Flutter payload sources and extracts `libflutter.so`, `libapp.so`, and `flutter_assets`.
-4. **Inject (`inject_flutter_runtime_and_smali`)**: Generates structure-safe Smali classes (`InjectedApplication`, `FlutterOverlayActivity`, `InjectedFlutterBootstrap`, `InjectedChannelHandler`) with strict stack preservation and hooks the target Activity's `onCreate`.
-5. **Patch (`patch_manifest_and_config`)**: Refactors `AndroidManifest.xml` (AXML/XML) for custom application classes, hardware acceleration, permissions, and overlay activities.
-6. **Repackage (`recompile_align_and_sign`)**: Rebuilds (`apktool b`), aligns (`zipalign`), and cryptographically signs (`apksigner`) with automatic debug keystore fallback.
+- **`/scan`**: Diagnostic audit scan of decompiled APK workspace, entry points, Smali structure, and native ABIs.
+- **`/inject`**: Execute Flutter runtime payload & Smali glue code injection into target APK.
+- **`/patch`**: Patch `AndroidManifest.xml` (application class, hardware acceleration, cleartext traffic, permissions).
+- **`/recompile`**: Repackage (`apktool b`), byte-align (`zipalign`), and cryptographically sign (`apksigner`) modified target.
 
 ---
 
-## 🛠️ Tools Exposed
+## 🧠 How it Works & Injection Modes
 
-| Tool | Description |
+The pipeline supports four flexible injection strategies aligning with Flutter's "Add-to-App" v2 architecture:
+
+1. **`activity_overlay`**: Generates a dedicated `FlutterOverlayActivity` extending `FlutterActivity` that reuses the pre-warmed cached engine.
+2. **`view_tree_injection`**: Programmatically attaches a `FlutterView` into the decor view layout tree of the target Activity's `onCreate()`.
+3. **`headless_engine`**: Initializes a background `FlutterEngine` without UI for headless Dart execution, channel routing, and telemetry.
+4. **`direct_application_hook`**: Directly instruments existing `Application.onCreate()` or `attachBaseContext()` methods in decompiled Smali without altering `android:name` in `AndroidManifest.xml`.
+
+---
+
+## 🛠️ The 6 Core MCP Tools
+
+| Tool Name | Detailed Function & Output |
 | --- | --- |
-| `decompile_apk` | Decompiles target Android APK using `apktool` into an isolated workspace directory |
-| `analyze_injection_surface` | Scans decompiled workspace for entry Activities, application classes, Smali methods, and ABIs |
-| `synthesize_flutter_payload` | Builds Flutter application assets (`libflutter.so`, `libapp.so`, `flutter_assets`) |
-| `inject_flutter_runtime_and_smali` | Allocates Smali register frames and deploys Flutter runtime into target APK workspace |
-| `patch_manifest_and_config` | Modifies `AndroidManifest.xml` (custom Application, permissions, activities, metadata) |
-| `recompile_align_and_sign` | Rebuilds (`apktool b`), byte-aligns (`zipalign`), and signs (`apksigner`) target APK |
+| `decompile_apk` | Disassemble a target Android APK into Smali bytecode, native library trees (`lib/`), resources (`res/`), and a decoded `AndroidManifest.xml` using `apktool`. Returns package name, main Activity, Application class, min/target SDKs, native ABIs, and file manifest. |
+| `analyze_injection_surface` | Scan a decompiled APK workspace to identify optimal injection hooks for Flutter runtime initialization: Application class presence (`android:name`), entry Activity, JNI loading sites, pre-existing Flutter classes, native ABIs, and recommended Smali patch points. |
+| `synthesize_flutter_payload` | Compile a source Flutter project and extract the runtime artifacts required for injection: `libflutter.so` (Flutter engine), `libapp.so` (Dart AOT snapshot), the `flutter_assets` bundle, and ICU data. Produces a payload directory ready to merge into a decompiled APK workspace. |
+| `inject_flutter_runtime_and_smali` | Inject Flutter engine assets, native libraries, and Smali glue code into a decompiled APK tree. Generates an `InjectedApplication` (`FlutterEngine` init + `libflutter`/`libapp` loading with try-catch fallback), a cached-engine bootstrap, an optional `FlutterOverlayActivity` (`activity_overlay` mode), and an optional two-way Smali<->Dart `MethodChannel` bridge. Returns a detailed patch report. |
+| `patch_manifest_and_config` | Patch the decoded `AndroidManifest.xml` with Flutter runtime requirements: `INTERNET`/`WAKE_LOCK` permissions, custom Application class override, `FlutterActivity` entry (`activity_overlay`), `engine-id` metadata, `extractNativeLibs`, `hardwareAccelerated`, and optional `usesCleartextTraffic`. Returns a validation status for the patched manifest. |
+| `recompile_align_and_sign` | Repack the decompiled APK workspace with `apktool`, run `zipalign` for 4-byte alignment, and sign with `apksigner` using V1/V2/V3 schemes. Uses an auto-generated debug keystore unless a custom `keystoreConfig` is provided. Returns the verified, aligned, installable APK path. |
 
 ---
 
-## 💻 Requirements
+## 💻 System Requirements
 
 - **Node.js >= 18.0.0**
-- **Java Runtime / JDK** (required by `apktool` and signing tools)
+- **Java Runtime / JDK** (required by `apktool` and `apksigner`)
 - **Android SDK Build-Tools** (`zipalign`, `apksigner` — auto-discovered from `ANDROID_HOME` or system PATH)
 - **apktool** installed on system PATH
-- **Flutter SDK** (required only when invoking `synthesize_flutter_payload`)
+- **Flutter SDK** (required only when executing `synthesize_flutter_payload`)
 
 ---
 
@@ -128,4 +137,5 @@ npm test
 ## 📜 License
 
 [MIT License](LICENSE) © 2026 [Marwan (MarwanDevSpace)](https://github.com/MarwanDevSpace)
+
 

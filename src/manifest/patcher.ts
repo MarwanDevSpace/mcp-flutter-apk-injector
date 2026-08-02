@@ -12,6 +12,9 @@ export interface ManifestPatchOptions {
   addLauncherForOverlay?: boolean;
   additionalPermissions?: string[];
   usesCleartextTraffic?: boolean;
+  extractNativeLibs?: boolean;
+  hardwareAccelerated?: boolean;
+  largeHeap?: boolean;
 }
 
 const DEFAULT_PERMISSIONS = ["android.permission.INTERNET", "android.permission.WAKE_LOCK"];
@@ -61,6 +64,15 @@ export async function patchManifest(options: ManifestPatchOptions): Promise<Mani
   );
   if (options.usesCleartextTraffic) {
     newApplicationBlock = setAndroidAttribute(newApplicationBlock, "usesCleartextTraffic", "true");
+  }
+  if (options.extractNativeLibs !== undefined) {
+    newApplicationBlock = setAndroidAttribute(newApplicationBlock, "extractNativeLibs", String(options.extractNativeLibs));
+  }
+  if (options.hardwareAccelerated !== undefined) {
+    newApplicationBlock = setAndroidAttribute(newApplicationBlock, "hardwareAccelerated", String(options.hardwareAccelerated));
+  }
+  if (options.largeHeap !== undefined) {
+    newApplicationBlock = setAndroidAttribute(newApplicationBlock, "largeHeap", String(options.largeHeap));
   }
   xml = xml.slice(0, start) + newApplicationBlock + xml.slice(end);
 

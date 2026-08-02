@@ -43,6 +43,36 @@ export async function injectActivityHook(
 }
 
 /**
+ * Inject an `InjectedFlutterBootstrap.initEngineFromContext(this)` invocation into
+ * an existing Application class's `onCreate()` method.
+ */
+export async function injectApplicationHook(
+  smaliFilePath: string,
+  bootstrapDescriptor: string,
+): Promise<SmaliPatchResult> {
+  const abs = await assertFileExists(smaliFilePath);
+  const content = await readText(abs);
+
+  const call = `invoke-static {p0}, ${bootstrapDescriptor}->initEngineFromContext(Landroid/content/Context;)V`;
+  const { content: patched } = injectInstructions(
+    content,
+    "onCreate",
+    "()V",
+    [call],
+    { atStart: true },
+  );
+
+  await writeText(abs, patched);
+  logger.info("patched application onCreate", { file: smaliFilePath });
+
+  return {
+    filePath: abs,
+    method: "onCreate",
+    injectedLineCount: 1,
+  };
+}
+
+/**
  * Verify that an injected smali file still assembles syntactically at the
  * structural level: balanced .method/.end method, valid header, and that the
  * bootstrap descriptor reference resolves to an existing class file.

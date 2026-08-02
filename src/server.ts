@@ -54,7 +54,7 @@ export interface McpFlutterServerOptions {
 export function createServer(options: McpFlutterServerOptions = {}): McpServer {
   const server = new McpServer({
     name: options.name ?? "mcp-flutter-apk-injector",
-    version: options.version ?? "0.1.0",
+    version: options.version ?? "0.2.0",
   });
 
   register(server, decompileApkTitle, decompileApkDescription, DecompileApkSchema, decompileApk);
@@ -63,6 +63,94 @@ export function createServer(options: McpFlutterServerOptions = {}): McpServer {
   register(server, injectFlutterTitle, injectFlutterDescription, InjectFlutterSchema, injectFlutter);
   register(server, patchManifestTitle, patchManifestDescription, PatchManifestSchema, patchManifest);
   register(server, recompileSignTitle, recompileSignDescription, RecompileSignSchema, recompileAlignSign);
+
+  // Register MCP Prompts for agent slash command triggers (/scan, /inject, /patch, /recompile)
+  server.registerPrompt(
+    "scan",
+    {
+      title: "scan",
+      description: "Perform a detailed injection surface diagnostic audit of a decompiled APK workspace",
+      argsSchema: { workspaceDir: z.string().describe("Path to decompiled APK directory") },
+    },
+    async (args) => ({
+      messages: [
+        {
+          role: "user",
+          content: {
+            type: "text",
+            text: `Run analyze_injection_surface tool on workspace: ${args.workspaceDir} and provide a full diagnostic audit report.`,
+          },
+        },
+      ],
+    }),
+  );
+
+  server.registerPrompt(
+    "inject",
+    {
+      title: "inject",
+      description: "Execute Flutter engine and Smali glue code injection into a target APK workspace",
+      argsSchema: {
+        workspaceDir: z.string().describe("Path to decompiled APK directory"),
+        payloadDir: z.string().describe("Path to synthesized Flutter payload directory"),
+        injectionMode: z.string().optional().describe("injectionMode: activity_overlay | view_tree_injection | headless_engine | direct_application_hook"),
+      },
+    },
+    async (args) => ({
+      messages: [
+        {
+          role: "user",
+          content: {
+            type: "text",
+            text: `Run inject_flutter_runtime_and_smali on workspace: ${args.workspaceDir} with payload: ${args.payloadDir} using mode: ${args.injectionMode ?? "activity_overlay"}.`,
+          },
+        },
+      ],
+    }),
+  );
+
+  server.registerPrompt(
+    "patch",
+    {
+      title: "patch",
+      description: "Patch AndroidManifest.xml and Smali structures with Flutter requirements",
+      argsSchema: { workspaceDir: z.string().describe("Path to decompiled APK directory") },
+    },
+    async (args) => ({
+      messages: [
+        {
+          role: "user",
+          content: {
+            type: "text",
+            text: `Run patch_manifest_and_config on workspace: ${args.workspaceDir}.`,
+          },
+        },
+      ],
+    }),
+  );
+
+  server.registerPrompt(
+    "recompile",
+    {
+      title: "recompile",
+      description: "Rebuild, align, and sign the modified APK workspace",
+      argsSchema: {
+        workspaceDir: z.string().describe("Path to decompiled APK directory"),
+        outputApkPath: z.string().describe("Path where final output APK should be saved"),
+      },
+    },
+    async (args) => ({
+      messages: [
+        {
+          role: "user",
+          content: {
+            type: "text",
+            text: `Run recompile_align_and_sign on workspace: ${args.workspaceDir} to output: ${args.outputApkPath}.`,
+          },
+        },
+      ],
+    }),
+  );
 
   return server;
 }

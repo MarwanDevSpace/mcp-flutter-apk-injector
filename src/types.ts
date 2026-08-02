@@ -1,4 +1,8 @@
-export type InjectionMode = "activity_overlay" | "view_tree_injection" | "headless_engine";
+export type InjectionMode =
+  | "activity_overlay"
+  | "view_tree_injection"
+  | "headless_engine"
+  | "direct_application_hook";
 
 export type FlutterBuildMode = "release" | "profile" | "debug";
 

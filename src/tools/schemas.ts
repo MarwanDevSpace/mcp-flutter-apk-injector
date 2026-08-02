@@ -56,9 +56,16 @@ export const MethodChannelBridgeSchema = z
 export const InjectFlutterSchema = {
   workspaceDir: z.string().min(1, "workspaceDir is required"),
   payloadDir: z.string().min(1, "payloadDir is required"),
-  injectionMode: z.enum(["activity_overlay", "view_tree_injection", "headless_engine"]),
+  injectionMode: z.enum([
+    "activity_overlay",
+    "view_tree_injection",
+    "headless_engine",
+    "direct_application_hook",
+  ]),
   methodChannelBridge: MethodChannelBridgeSchema,
   engineId: z.string().optional(),
+  attachBaseContextHook: z.boolean().optional().describe("Inject engine init into attachBaseContext(Context) as well as onCreate()"),
+  nativeLibraryFallback: z.boolean().optional().describe("Wrap System.loadLibrary in try-catch to prevent UnsatisfiedLinkError crashes"),
 };
 export interface InjectFlutterParams {
   workspaceDir: string;
@@ -66,6 +73,8 @@ export interface InjectFlutterParams {
   injectionMode: InjectionMode;
   methodChannelBridge?: MethodChannelBridgeConfig;
   engineId?: string;
+  attachBaseContextHook?: boolean;
+  nativeLibraryFallback?: boolean;
 }
 
 export const PatchManifestSchema = {
@@ -73,12 +82,18 @@ export const PatchManifestSchema = {
   customApplicationClass: z.string().optional(),
   additionalPermissions: z.array(z.string()).optional(),
   usesCleartextTraffic: z.boolean().optional(),
+  extractNativeLibs: z.boolean().optional().describe("Set android:extractNativeLibs in application element"),
+  hardwareAccelerated: z.boolean().optional().describe("Set android:hardwareAccelerated in application element"),
+  largeHeap: z.boolean().optional().describe("Set android:largeHeap in application element"),
 };
 export interface PatchManifestParams {
   workspaceDir: string;
   customApplicationClass?: string;
   additionalPermissions?: string[];
   usesCleartextTraffic?: boolean;
+  extractNativeLibs?: boolean;
+  hardwareAccelerated?: boolean;
+  largeHeap?: boolean;
 }
 
 export const KeystoreConfigSchema = z

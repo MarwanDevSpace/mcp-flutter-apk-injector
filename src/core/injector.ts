@@ -98,7 +98,7 @@ export async function injectFlutterRuntimeAndSmali(
 
   const patchedActivity = manifestResult.addedActivities[0] ?? null;
 
-  // view_tree_injection: hook the launcher activity's onCreate.
+  // view_tree_injection / direct_application_hook logic
   let launchActivityName = patchedActivity ?? surface.entryActivities.find((a) => a.launcher)?.name ?? null;
   if (opts.injectionMode === "view_tree_injection") {
     const launcher = surface.entryActivities.find((a) => a.launcher);
@@ -116,6 +116,21 @@ export async function injectFlutterRuntimeAndSmali(
     } else {
       surface.warnings.push(
         "Could not locate a decompiled Activity to hook; FlutterView will not be attached.",
+      );
+    }
+  } else if (opts.injectionMode === "direct_application_hook") {
+    const { injectApplicationHook } = await import("../smali/transformer.js");
+    if (surface.applicationClassPath) {
+      const patch = await injectApplicationHook(surface.applicationClassPath, generation.bootstrapDescriptor);
+      modifiedFiles.push({
+        filePath: path.relative(workspaceDir, patch.filePath).split(path.sep).join("/"),
+        patchType: "smali_insert",
+        description: `Injected Flutter engine init into Application onCreate (${patch.method})`,
+        verified: validateSmaliStructure(patch.filePath).ok,
+      });
+    } else {
+      surface.warnings.push(
+        "No decompiled Application class found to hook directly; generated standalone InjectedApplication.",
       );
     }
   }

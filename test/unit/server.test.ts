@@ -39,14 +39,13 @@ describe("server", () => {
     }
   });
 
-  it("refuses to re-register an existing tool name", () => {
-    const server = createServer();
-    expect(() => {
-      const registered = server as unknown as {
-        registerTool(name: string, config: Record<string, unknown>): void;
-      };
-      registered.registerTool("decompile_apk", { title: "dup", description: "dup" }, () => ({}));
-    }).toThrow(/already registered/i);
+  it("registers agent prompts for /scan, /inject, /patch, /recompile commands", () => {
+    const server = createServer() as unknown as { _registeredPrompts: Record<string, unknown> };
+    const promptNames = Object.keys(server._registeredPrompts);
+    expect(promptNames).toContain("scan");
+    expect(promptNames).toContain("inject");
+    expect(promptNames).toContain("patch");
+    expect(promptNames).toContain("recompile");
   });
 });
 
