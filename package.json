@@ -1,0 +1,74 @@
+{
+  "name": "mcp-flutter-apk-injector",
+  "version": "0.1.0",
+  "description": "Model Context Protocol (MCP) server for automated Android APK reverse engineering, Smali bytecode refactoring, and Flutter runtime payload injection.",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "license": "MIT",
+  "author": "Marwan <https://github.com/MarwanDevSpace>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MarwanDevSpace/mcp-flutter-apk-injector.git"
+  },
+  "bugs": {
+    "url": "https://github.com/MarwanDevSpace/mcp-flutter-apk-injector/issues"
+  },
+  "homepage": "https://github.com/MarwanDevSpace/mcp-flutter-apk-injector#readme",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "flutter",
+    "apk",
+    "smali",
+    "reverse-engineering",
+    "security-research",
+    "android",
+    "decompiler",
+    "payload-injection"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "bin": {
+    "mcp-flutter-apk-injector": "dist/index.js"
+  },
+  "files": [
+    "dist",
+    "templates",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint \"src/**/*.ts\" \"test/**/*.ts\"",
+    "lint:fix": "eslint \"src/**/*.ts\" \"test/**/*.ts\" --fix",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:unit": "vitest run test/unit",
+    "test:integration": "vitest run test/integration",
+    "prepare": "npm run build"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.30.0",
+    "adm-zip": "^0.5.16",
+    "fast-xml-parser": "^4.5.3",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.25.1",
+    "@types/adm-zip": "^0.5.7",
+    "@types/node": "^22.15.0",
+    "eslint": "^9.25.1",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.32.1",
+    "vitest": "^3.1.4"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
+

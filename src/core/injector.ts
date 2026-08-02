@@ -1,0 +1,173 @@
+import path from "node:path";
+import { assertDirExists, readText } from "./fileUtils.js";
+import { analyzeInjectionSurface, findSmaliRoot } from "../decompiler/analyzer.js";
+import { parseManifestFile } from "../decompiler/manifestParser.js";
+import { generateSmaliClasses } from "../smali/generator.js";
+import { injectActivityHook, validateSmaliStructure } from "../smali/transformer.js";
+import { deployPayloadIntoWorkspace } from "../payload/deploy.js";
+import { patchManifest } from "../manifest/patcher.js";
+import { logger } from "./logger.js";
+import type {
+  InjectionMode,
+  InjectionReport,
+  InjectedFilePatch,
+  MethodChannelBridgeConfig,
+} from "../types.js";
+
+export const DEFAULT_ENGINE_ID = "injected_flutter_engine";
+
+export interface InjectFlutterOptions {
+  workspaceDir: string;
+  payloadDir: string;
+  injectionMode: InjectionMode;
+  methodChannel?: MethodChannelBridgeConfig;
+  engineId?: string;
+}
+
+export async function injectFlutterRuntimeAndSmali(
+  opts: InjectFlutterOptions,
+): Promise<InjectionReport> {
+  const workspaceDir = await assertDirExists(opts.workspaceDir);
+  const payloadDir = await assertDirExists(opts.payloadDir);
+  const engineId = opts.engineId ?? DEFAULT_ENGINE_ID;
+
+  const surface = await analyzeInjectionSurface(workspaceDir);
+  const smaliRoot = await findSmaliRoot(workspaceDir);
+  if (!smaliRoot) {
+    throw new Error(
+      "No smali directory found in workspace. Decompile the APK with sources enabled (decompileSources=true) before injecting.",
+    );
+  }
+
+  const packageName = surface.packageName;
+  const manifest = await parseManifestFile(path.join(workspaceDir, "AndroidManifest.xml"));
+  const originalApplication = manifest.application.name
+    ? qualifyClassName(manifest.application.name, packageName)
+    : null;
+
+  // Application superclass: subclass the original application so its behavior
+  // is preserved via super.onCreate(), otherwise android.app.Application.
+  const applicationSuper = originalApplication ?? "android.app.Application";
+
+  const generation = await generateSmaliClasses({
+    packageName,
+    smaliRoot,
+    engineId,
+    applicationSuperClass: applicationSuper,
+    injectionModes: [opts.injectionMode],
+    channel: opts.methodChannel,
+  });
+
+  const modifiedFiles: InjectedFilePatch[] = generation.classes.map((c) => ({
+    filePath: c.relativePath,
+    patchType: "smali_create" as const,
+    description: `Injected ${c.className}`,
+    verified: validateSmaliStructure(c.absolutePath).ok,
+  }));
+
+  // Deploy native libs + assets.
+  const deployed = await deployPayloadIntoWorkspace(workspaceDir, payloadDir);
+
+  for (const lib of deployed.copiedLibs) {
+    modifiedFiles.push({
+      filePath: lib,
+      patchType: "lib_copy",
+      description: `Native library: ${lib}`,
+      verified: true,
+    });
+  }
+  for (const asset of deployed.copiedAssets) {
+    modifiedFiles.push({
+      filePath: asset,
+      patchType: "asset_copy",
+      description: `Flutter asset: ${asset}`,
+      verified: true,
+    });
+  }
+
+  // Patch manifest.
+  const overlayClass = opts.injectionMode === "activity_overlay" ? generation.overlayActivityDescriptor : null;
+  const manifestResult = await patchManifest({
+    workspaceDir,
+    customApplicationClass: generation.applicationDescriptor.slice(1, -1).replaceAll("/", "."),
+    engineId,
+    overlayActivityClass: overlayClass ? overlayClass.slice(1, -1).replaceAll("/", ".") : null,
+    addLauncherForOverlay: true,
+    usesCleartextTraffic: true,
+  });
+
+  const patchedActivity = manifestResult.addedActivities[0] ?? null;
+
+  // view_tree_injection: hook the launcher activity's onCreate.
+  let launchActivityName = patchedActivity ?? surface.entryActivities.find((a) => a.launcher)?.name ?? null;
+  if (opts.injectionMode === "view_tree_injection") {
+    const launcher = surface.entryActivities.find((a) => a.launcher);
+    const fallback = surface.entryActivities[0];
+    const activityPath = launcher?.path ?? fallback?.path ?? null;
+    if (activityPath) {
+      const patch = await injectActivityHook(activityPath, generation.bootstrapDescriptor);
+      modifiedFiles.push({
+        filePath: path.relative(workspaceDir, patch.filePath).split(path.sep).join("/"),
+        patchType: "smali_insert",
+        description: `Injected FlutterView bootstrap into onCreate (${patch.method})`,
+        verified: validateSmaliStructure(patch.filePath).ok,
+      });
+      launchActivityName = (launcher ?? fallback)?.name ?? launchActivityName;
+    } else {
+      surface.warnings.push(
+        "Could not locate a decompiled Activity to hook; FlutterView will not be attached.",
+      );
+    }
+  }
+
+  logger.info("injection complete", {
+    workspaceDir,
+    mode: opts.injectionMode,
+    generatedClasses: generation.classes.length,
+    modifiedFiles: modifiedFiles.length,
+  });
+
+  const warnings = [...surface.warnings];
+  if (manifest.minSdkVersion !== null && manifest.minSdkVersion < 21) {
+    warnings.push(
+      `Target minSdkVersion is ${manifest.minSdkVersion}; Flutter requires API 21+.`,
+    );
+  }
+  if (deployed.copiedLibs.length === 0) {
+    warnings.push("No native libraries deployed; the Flutter engine will not start.");
+  }
+
+  return {
+    workspaceDir,
+    injectionMode: opts.injectionMode,
+    methodChannel: opts.methodChannel,
+    generatedClasses: generation.classes.map((c) => c.descriptor),
+    modifiedFiles,
+    copiedAssets: deployed.copiedAssets.length,
+    copiedLibs: deployed.copiedLibs.length,
+    engineId,
+    launchActivityName: launchActivityName ?? "unknown",
+    warnings,
+  };
+}
+
+function qualifyClassName(name: string, packageName: string): string {
+  if (name.startsWith(".")) return packageName + name;
+  if (name.startsWith("L") && name.endsWith(";")) return name.slice(1, -1).replaceAll("/", ".");
+  return name;
+}
+
+export async function readGeneratedSmali(
+  workspaceDir: string,
+  className: string,
+): Promise<string | null> {
+  const smaliRoot = await findSmaliRoot(workspaceDir);
+  if (!smaliRoot) return null;
+  const rel = className.replaceAll(".", "/") + ".smali";
+  const abs = path.join(smaliRoot, rel);
+  try {
+    return await readText(abs);
+  } catch {
+    return null;
+  }
+}
