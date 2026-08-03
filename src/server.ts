@@ -64,18 +64,16 @@ export function createServer(options: McpFlutterServerOptions = {}): McpServer {
   register(server, patchManifestTitle, patchManifestDescription, PatchManifestSchema, patchManifest);
   register(server, recompileSignTitle, recompileSignDescription, RecompileSignSchema, recompileAlignSign);
 
-  // Register MCP Prompts for agent slash command triggers (/scan, /decompile, /inject, /patch, /recompile)
+  // Register MCP Prompts for agent slash command triggers (/scan, /decompile, /inject, /patch, /recompile, /pipeline)
   server.registerPrompt(
     "scan",
     {
       title: "scan",
       description: "Perform a detailed injection surface diagnostic audit of a decompiled APK workspace",
-      argsSchema: {
-        workspaceDir: z.string().optional().describe("Path to decompiled APK directory (optional)"),
-      },
     },
-    async (args) => {
-      const target = args.workspaceDir ?? "current active workspace";
+    async (extra) => {
+      const args = (extra as { params?: { arguments?: Record<string, string> } })?.params?.arguments ?? {};
+      const target = args["workspaceDir"] ?? "the active workspace directory";
       return {
         messages: [
           {
@@ -100,14 +98,11 @@ Please locate the decompiled APK workspace directory (target: ${target}), invoke
     {
       title: "decompile",
       description: "Disassemble an Android APK file into Smali bytecode and decoded resources",
-      argsSchema: {
-        apkPath: z.string().optional().describe("Path to target APK file (optional)"),
-        outputDir: z.string().optional().describe("Output directory for decompiled workspace (optional)"),
-      },
     },
-    async (args) => {
-      const apk = args.apkPath ? `file "${args.apkPath}"` : "the target .apk file in the workspace";
-      const out = args.outputDir ? `into "${args.outputDir}"` : "into a designated workspace directory";
+    async (extra) => {
+      const args = (extra as { params?: { arguments?: Record<string, string> } })?.params?.arguments ?? {};
+      const apk = args["apkPath"] ? `file "${args["apkPath"]}"` : "the target .apk file in the workspace";
+      const out = args["outputDir"] ? `into "${args["outputDir"]}"` : "into a designated workspace directory";
       return {
         messages: [
           {
@@ -128,16 +123,12 @@ Please locate ${apk} and disassemble it ${out} using the \`decompile_apk\` tool 
     {
       title: "inject",
       description: "Execute Flutter engine and Smali glue code injection into a target APK workspace",
-      argsSchema: {
-        workspaceDir: z.string().optional().describe("Path to decompiled APK directory (optional)"),
-        payloadDir: z.string().optional().describe("Path to synthesized Flutter payload directory (optional)"),
-        injectionMode: z.string().optional().describe("injectionMode: activity_overlay | view_tree_injection | headless_engine | direct_application_hook (optional)"),
-      },
     },
-    async (args) => {
-      const ws = args.workspaceDir ? `workspace: "${args.workspaceDir}"` : "the decompiled APK workspace";
-      const payload = args.payloadDir ? `payload: "${args.payloadDir}"` : "the synthesized Flutter payload";
-      const mode = args.injectionMode ?? "activity_overlay / direct_application_hook";
+    async (extra) => {
+      const args = (extra as { params?: { arguments?: Record<string, string> } })?.params?.arguments ?? {};
+      const ws = args["workspaceDir"] ? `workspace: "${args["workspaceDir"]}"` : "the decompiled APK workspace";
+      const payload = args["payloadDir"] ? `payload: "${args["payloadDir"]}"` : "the synthesized Flutter payload";
+      const mode = args["injectionMode"] ?? "activity_overlay / direct_application_hook";
       return {
         messages: [
           {
@@ -158,12 +149,10 @@ Please execute the \`inject_flutter_runtime_and_smali\` tool using ${ws} and ${p
     {
       title: "patch",
       description: "Patch AndroidManifest.xml and Smali structures with Flutter requirements",
-      argsSchema: {
-        workspaceDir: z.string().optional().describe("Path to decompiled APK directory (optional)"),
-      },
     },
-    async (args) => {
-      const ws = args.workspaceDir ? `workspace "${args.workspaceDir}"` : "the decompiled APK workspace";
+    async (extra) => {
+      const args = (extra as { params?: { arguments?: Record<string, string> } })?.params?.arguments ?? {};
+      const ws = args["workspaceDir"] ? `workspace "${args["workspaceDir"]}"` : "the decompiled APK workspace";
       return {
         messages: [
           {
@@ -184,14 +173,11 @@ Please invoke the \`patch_manifest_and_config\` tool on ${ws} to insert required
     {
       title: "recompile",
       description: "Rebuild, align, and sign the modified APK workspace",
-      argsSchema: {
-        workspaceDir: z.string().optional().describe("Path to decompiled APK directory (optional)"),
-        outputApkPath: z.string().optional().describe("Path where final output APK should be saved (optional)"),
-      },
     },
-    async (args) => {
-      const ws = args.workspaceDir ? `workspace "${args.workspaceDir}"` : "the modified APK workspace";
-      const out = args.outputApkPath ? `to "${args.outputApkPath}"` : "to an aligned, signed output APK path";
+    async (extra) => {
+      const args = (extra as { params?: { arguments?: Record<string, string> } })?.params?.arguments ?? {};
+      const ws = args["workspaceDir"] ? `workspace "${args["workspaceDir"]}"` : "the modified APK workspace";
+      const out = args["outputApkPath"] ? `to "${args["outputApkPath"]}"` : "to an aligned, signed output APK path";
       return {
         messages: [
           {
@@ -200,6 +186,36 @@ Please invoke the \`patch_manifest_and_config\` tool on ${ws} to insert required
               type: "text",
               text: `📦 [MCP /recompile Triggered]
 Please invoke the \`recompile_align_and_sign\` tool to rebuild ${ws} ${out}. Ensure apktool assembly, zipalign 4-byte alignment, and apksigner signing complete cleanly.`,
+            },
+          },
+        ],
+      };
+    },
+  );
+
+  server.registerPrompt(
+    "pipeline",
+    {
+      title: "pipeline",
+      description: "Execute full end-to-end automated reverse engineering & Flutter injection pipeline",
+    },
+    async (extra) => {
+      const args = (extra as { params?: { arguments?: Record<string, string> } })?.params?.arguments ?? {};
+      const apk = args["apkPath"] ? `target APK "${args["apkPath"]}"` : "the target .apk file in the workspace";
+      return {
+        messages: [
+          {
+            role: "user",
+            content: {
+              type: "text",
+              text: `⚡ [MCP /pipeline Triggered]
+Please execute the full automated end-to-end injection pipeline on ${apk}:
+1. \`decompile_apk\`: Disassemble the target APK.
+2. \`analyze_injection_surface\`: Audit entry points, Application class, and native ABIs.
+3. \`synthesize_flutter_payload\`: Build or extract Flutter engine runtime artifacts.
+4. \`inject_flutter_runtime_and_smali\`: Deploy Smali classes, native libraries, and Flutter assets.
+5. \`patch_manifest_and_config\`: Update AndroidManifest.xml for permissions and application setup.
+6. \`recompile_align_and_sign\`: Rebuild, align, and sign the final APK.`,
             },
           },
         ],
