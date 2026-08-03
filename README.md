@@ -68,14 +68,23 @@ Add the following block to your `claude_desktop_config.json`:
 
 ---
 
-## ⚡ Agent Prompts & Slash Commands
+## 🛡️ Hermes+ Master Agent & MCP Skills System
 
-`mcp-flutter-apk-injector` registers native MCP Prompts for AI desktop agents (Antigravity IDE, Claude Desktop, Cursor):
+`mcp-flutter-apk-injector` is tightly integrated with **Hermes+** (Elite Android Systems & Reverse Engineering Architect) and exposes pre-configured **MCP Skills** (`.agents/skills/`):
+
+* 🧠 **`hermes-apk-reverse-engineering`**: Master skill for disassembling, DEX/Smali refactoring, register frame allocation (`v0`-`vN`, `p0`-`pN`), native `.so` library deployment, and Flutter runtime injection.
+* ⚡ **`mcp-toolchain-orchestrator`**: Master skill for high-precision MCP toolchain orchestration, zero-argument prompt handling, automated testing, and distribution.
+
+### ⚡ Agent Prompts & Slash Commands
+
+`mcp-flutter-apk-injector` registers native zero-argument resilient MCP Prompts for AI desktop agents (Antigravity IDE, Claude Desktop, Cursor):
 
 - **`/scan`**: Diagnostic audit scan of decompiled APK workspace, entry points, Smali structure, and native ABIs.
+- **`/decompile`**: Disassemble target `.apk` into Smali bytecode and resources using `apktool`.
 - **`/inject`**: Execute Flutter runtime payload & Smali glue code injection into target APK.
 - **`/patch`**: Patch `AndroidManifest.xml` (application class, hardware acceleration, cleartext traffic, permissions).
 - **`/recompile`**: Repackage (`apktool b`), byte-align (`zipalign`), and cryptographically sign (`apksigner`) modified target.
+- **`/pipeline`**: Full automated end-to-end decompilation ➔ analysis ➔ payload synthesis ➔ injection ➔ manifest patch ➔ recompilation pipeline.
 
 ---
 
