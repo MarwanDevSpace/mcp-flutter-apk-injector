@@ -2,13 +2,19 @@ import { describe, it, expect } from "vitest";
 import { createServer } from "../../src/server.js";
 import { ToolNotFoundError, ProcessExecutionError, MCPFlutterError, ToolErrorCode } from "../../src/core/errors.js";
 
-const EXPECTED_TOOLS = [
+const EXPECTED_CORE_TOOLS = [
   "decompile_apk",
   "analyze_injection_surface",
   "synthesize_flutter_payload",
   "inject_flutter_runtime_and_smali",
   "patch_manifest_and_config",
   "recompile_align_and_sign",
+];
+
+const EXPECTED_AGENT_TOOLS = [
+  "get_agent_context",
+  "update_agent_memory",
+  "query_memory_graph",
 ];
 
 interface RegisteredToolLike {
@@ -20,11 +26,14 @@ interface RegisteredToolLike {
 }
 
 describe("server", () => {
-  it("registers exactly the six injection tools", () => {
+  it("registers core injection tools and high-capability agent memory tools", () => {
     const server = createServer() as unknown as { _registeredTools: Record<string, RegisteredToolLike> };
     const names = Object.keys(server._registeredTools);
-    expect(names).toHaveLength(6);
-    for (const expected of EXPECTED_TOOLS) {
+    expect(names).toHaveLength(9);
+    for (const expected of EXPECTED_CORE_TOOLS) {
+      expect(names).toContain(expected);
+    }
+    for (const expected of EXPECTED_AGENT_TOOLS) {
       expect(names).toContain(expected);
     }
   });
@@ -56,6 +65,9 @@ describe("server", () => {
     expect(promptNames).toContain("inject");
     expect(promptNames).toContain("patch");
     expect(promptNames).toContain("recompile");
+    expect(promptNames).toContain("pipeline");
+    expect(promptNames).toContain("memory");
+    expect(promptNames).toContain("hermes_guide");
 
     // Verify zero-argument invocation works without throwing
     for (const name of promptNames) {
