@@ -53,6 +53,8 @@ export async function analyzeInjectionSurface(workspaceDir: string): Promise<Inj
 
   const existingFlutterClasses = smaliRoot ? await findFlutterClasses(smaliRoot) : [];
   const jniLoadingHooks = smaliRoot ? await findJniLoadingHooks(smaliRoot, applicationClassPath) : [];
+  const assetScripts = await findAssetScripts(abs);
+  const luaMods = await findLuaMods(abs);
 
   const warnings: string[] = [];
   if (!smaliRoot) warnings.push("No smali directory found; decompile with sources enabled first.");
@@ -80,6 +82,13 @@ export async function analyzeInjectionSurface(workspaceDir: string): Promise<Inj
     "AndroidManifest.xml: add <activity> for FlutterActivity (activity_overlay mode)",
   );
 
+  const automatedChainSuggestions: string[] = [
+    `1. Synthesize Flutter runtime payload for ABIs: ${ (await detectLibAbis(abs)).join(", ") || "arm64-v8a" } using synthesize_flutter_payload`,
+    `2. Inject runtime & Smali glue code via inject_flutter_runtime_and_smali (mode: ${ manifest.application.name ? "direct_application_hook" : "activity_overlay" })`,
+    "3. Apply manifest permissions and metadata via patch_manifest_and_config",
+    "4. Repackage, align 4-byte, and sign output APK via recompile_align_and_sign",
+  ];
+
   return {
     workspaceDir: abs,
     packageName,
@@ -91,9 +100,48 @@ export async function analyzeInjectionSurface(workspaceDir: string): Promise<Inj
     existingFlutterClasses,
     existingNativeAbis: await detectLibAbis(abs),
     jniLoadingHooks,
+    assetScripts,
+    luaMods,
     recommendedPatchPoints,
+    automatedChainSuggestions,
     warnings,
   };
+}
+
+async function findAssetScripts(workspaceDir: string): Promise<string[]> {
+  const assetsDir = path.join(workspaceDir, "assets");
+  if (!(await exists(assetsDir))) return [];
+  const found: string[] = [];
+  const walk = async (dir: string): Promise<void> => {
+    const entries = await readdir(dir, { withFileTypes: true }).catch(() => []);
+    for (const e of entries) {
+      const full = path.join(dir, e.name);
+      if (e.isDirectory()) await walk(full);
+      else if (/\.(lua|json|js|wasm|py|ini|cfg|conf|asset|bundle)$/i.test(e.name)) {
+        found.push(path.relative(assetsDir, full).replaceAll("\\", "/"));
+      }
+    }
+  };
+  await walk(assetsDir);
+  return found.slice(0, 30);
+}
+
+async function findLuaMods(workspaceDir: string): Promise<string[]> {
+  const assetsDir = path.join(workspaceDir, "assets");
+  if (!(await exists(assetsDir))) return [];
+  const found: string[] = [];
+  const walk = async (dir: string): Promise<void> => {
+    const entries = await readdir(dir, { withFileTypes: true }).catch(() => []);
+    for (const e of entries) {
+      const full = path.join(dir, e.name);
+      if (e.isDirectory()) await walk(full);
+      else if (e.name.endsWith(".lua")) {
+        found.push(path.relative(assetsDir, full).replaceAll("\\", "/"));
+      }
+    }
+  };
+  await walk(assetsDir);
+  return found;
 }
 
 function qualifyClass(name: string, packageName: string): string {

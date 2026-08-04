@@ -48,7 +48,10 @@ export interface InjectionSurface {
   existingFlutterClasses: string[];
   existingNativeAbis: string[];
   jniLoadingHooks: string[];
+  assetScripts: string[];
+  luaMods: string[];
   recommendedPatchPoints: string[];
+  automatedChainSuggestions: string[];
   warnings: string[];
 }
 
