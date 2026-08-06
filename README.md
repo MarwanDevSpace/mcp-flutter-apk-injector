@@ -10,6 +10,7 @@
 [![Model Context Protocol](https://img.shields.io/badge/MCP-1.30.0-purple.svg?style=flat-badge)](https://modelcontextprotocol.io)
 [![Hermes+ Engine](https://img.shields.io/badge/Agent-Hermes%2B_Memory_Engine-red?style=flat-badge&logo=openai)](https://github.com/MarwanDevSpace/mcp-flutter-apk-injector)
 [![GitHub Repository](https://img.shields.io/badge/GitHub-MarwanDevSpace-black?style=flat-badge&logo=github)](https://github.com/MarwanDevSpace/mcp-flutter-apk-injector)
+[![mcp-flutter-apk-injector MCP server](https://glama.ai/mcp/servers/MarwanDevSpace/mcp-flutter-apk-injector/badges/score.svg)](https://glama.ai/mcp/servers/MarwanDevSpace/mcp-flutter-apk-injector)
 
 **The World's Most Advanced Memory-Aware Model Context Protocol (MCP) Server for Android APK Reverse Engineering, Dalvik/Smali Bytecode Refactoring, Native JNI Tracing, and Flutter Runtime Overlay Injection.**
 
