@@ -67,7 +67,7 @@ export interface McpFlutterServerOptions {
 export function createServer(options: McpFlutterServerOptions = {}): McpServer {
   const server = new McpServer({
     name: options.name ?? "mcp-flutter-apk-injector",
-    version: options.version ?? "0.5.3",
+    version: options.version ?? "0.5.4",
   });
 
   const memory = SessionMemoryManager.getInstance();
