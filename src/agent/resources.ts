@@ -1,6 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { HERMES_SYSTEM_PROMPT, HERMES_OPERATIONAL_RULES } from "./persona.js";
-import { EMBEDDED_SKILLS } from "./skills.js";
+import { getHermesSystemPrompt, HERMES_OPERATIONAL_RULES } from "./persona.js";
+import { listSkills } from "./skills.js";
 import { SessionMemoryManager } from "./memory.js";
 
 export function registerAgentResources(server: McpServer): void {
@@ -12,7 +12,7 @@ export function registerAgentResources(server: McpServer): void {
       contents: [
         {
           uri: uri.href,
-          text: HERMES_SYSTEM_PROMPT,
+          text: getHermesSystemPrompt(),
           mimeType: "text/markdown",
         },
       ],
@@ -35,10 +35,10 @@ export function registerAgentResources(server: McpServer): void {
   );
 
   // Register Skills Resources
-  for (const [skillKey, skill] of Object.entries(EMBEDDED_SKILLS)) {
+  for (const skill of listSkills()) {
     server.resource(
-      `skill-${skillKey}`,
-      `resource://agent/skills/${skillKey}`,
+      `skill-${skill.name}`,
+      `resource://agent/skills/${skill.name}`,
       async (uri) => ({
         contents: [
           {

@@ -1,6 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { SessionMemoryManager } from "./memory.js";
-import { HERMES_PERSONA_NAME, HERMES_SYSTEM_PROMPT } from "./persona.js";
+import { HERMES_PERSONA_NAME, getHermesSystemPrompt } from "./persona.js";
 
 export function registerAgentPrompts(server: McpServer): void {
   // /scan Prompt
@@ -254,7 +254,7 @@ Please analyze current memory state, report any un-patched injection surface ris
             role: "user",
             content: {
               type: "text",
-              text: HERMES_SYSTEM_PROMPT,
+              text: getHermesSystemPrompt(),
             },
           },
         ],
@@ -262,3 +262,4 @@ Please analyze current memory state, report any un-patched injection surface ris
     }
   );
 }
+

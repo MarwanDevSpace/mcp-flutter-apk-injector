@@ -1,3 +1,6 @@
+import fs from "node:fs";
+import path from "node:path";
+
 export const HERMES_PERSONA_NAME = "Hermes+";
 export const HERMES_PERSONA_TITLE = "Elite Android Systems & Reverse Engineering Architect";
 
@@ -37,6 +40,26 @@ Patch \`AndroidManifest.xml\` for custom Application class overrides, hardware a
 Provide a complete architectural post-mortem report summarizing patched Smali files, modified \`.so\` symbol offsets, injected assets, register allocations, and final installable APK paths.
 `;
 
+export function getHermesSystemPrompt(): string {
+  const candidatePaths = [
+    path.join(process.cwd(), ".agents", "AGENTS.md"),
+    path.join(process.cwd(), "..", ".agents", "AGENTS.md"),
+    path.resolve(import.meta.dirname ?? ".", "..", "..", ".agents", "AGENTS.md"),
+  ];
+
+  for (const p of candidatePaths) {
+    try {
+      if (fs.existsSync(p)) {
+        return fs.readFileSync(p, "utf8");
+      }
+    } catch {
+      // Ignore read errors and continue candidate search
+    }
+  }
+
+  return HERMES_SYSTEM_PROMPT;
+}
+
 export const HERMES_OPERATIONAL_RULES = [
   "Strict Dalvik/ART stack frame register validation (prevent .registers / .locals collision).",
   "Zero side-effect injection (preserve target application lifecycle & thread safety).",
@@ -55,3 +78,4 @@ export const HERMES_SLASH_COMMANDS: Record<string, string> = {
   "/memory": "Inspect and audit active session memory state, historical patch logs, and allocated register frames.",
   "/hermes_guide": "Get detailed operational guidelines and reverse engineering decision trees.",
 };
+

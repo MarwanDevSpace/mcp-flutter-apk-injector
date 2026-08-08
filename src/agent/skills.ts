@@ -1,3 +1,6 @@
+import fs from "node:fs";
+import path from "node:path";
+
 export interface AgentSkill {
   name: string;
   description: string;
@@ -134,10 +137,49 @@ When updating an MCP server package:
   },
 };
 
+export function loadFSSkills(): Record<string, AgentSkill> {
+  const candidateDirs = [
+    path.join(process.cwd(), ".agents", "skills"),
+    path.join(process.cwd(), "..", ".agents", "skills"),
+    path.resolve(import.meta.dirname ?? ".", "..", "..", ".agents", "skills"),
+  ];
+
+  const loaded: Record<string, AgentSkill> = { ...EMBEDDED_SKILLS };
+
+  for (const dir of candidateDirs) {
+    try {
+      if (!fs.existsSync(dir)) continue;
+      const entries = fs.readdirSync(dir, { withFileTypes: true });
+      for (const entry of entries) {
+        if (!entry.isDirectory()) continue;
+        const skillPath = path.join(dir, entry.name, "SKILL.md");
+        if (!fs.existsSync(skillPath)) continue;
+        const content = fs.readFileSync(skillPath, "utf8");
+        const nameMatch = /^name:\s*(.+)$/m.exec(content);
+        const descMatch = /^description:\s*(.+)$/m.exec(content);
+        const name = nameMatch ? nameMatch[1]!.trim() : entry.name;
+        const description = descMatch ? descMatch[1]!.trim() : name;
+
+        loaded[name] = {
+          name,
+          description,
+          markdownContent: content,
+        };
+      }
+    } catch {
+      // Ignore read errors
+    }
+  }
+
+  return loaded;
+}
+
 export function getSkill(name: string): AgentSkill | undefined {
-  return EMBEDDED_SKILLS[name];
+  const skills = loadFSSkills();
+  return skills[name];
 }
 
 export function listSkills(): AgentSkill[] {
-  return Object.values(EMBEDDED_SKILLS);
+  return Object.values(loadFSSkills());
 }
+
