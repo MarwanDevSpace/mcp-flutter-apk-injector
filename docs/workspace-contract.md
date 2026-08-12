@@ -1,10 +1,10 @@
-# Workspace Contract
+# Hermes+ Character Contract
 
-The canonical AI/workspace guidance for this repository is [`GEMINI.md`](../GEMINI.md). The embedded MCP persona reads this document first at runtime. [`../.agents/AGENTS.md`](../.agents/AGENTS.md) is an intentionally identical compatibility copy for agent environments that expect an `.agents` tree.
+The canonical AI character and workspace guidance for this repository is [`GEMINI.md`](../GEMINI.md). The embedded Hermes+ persona reads this document first at runtime. [`../.agents/AGENTS.md`](../.agents/AGENTS.md) is an intentionally identical compatibility copy for agent environments that expect an `.agents` tree.
 
 ## Synchronization rule
 
-Changes to workflow, safety boundaries, slash commands, release gates, or source-tree ownership must update both files in the same commit. Run the following before committing a guidance change:
+Changes to character behavior, workflow, safety boundaries, slash commands, release gates, or source-tree ownership must update both files in the same commit. Run the following before committing a guidance change:
 
 ```bash
 cmp -s GEMINI.md .agents/AGENTS.md
@@ -21,4 +21,4 @@ If the command returns non-zero, synchronize the copy from the canonical file ra
 3. Parent-workspace equivalents
 4. The embedded minimal fallback prompt
 
-This ordering makes the project contract portable across Gemini-oriented workspaces, embedded MCP clients, and local agent runners.
+This ordering makes the Hermes+ character contract portable across Gemini-oriented workspaces, embedded MCP clients, and local agent runners.
