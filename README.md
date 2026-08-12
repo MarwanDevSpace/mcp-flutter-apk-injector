@@ -26,7 +26,7 @@
 
 `mcp-flutter-apk-injector` is a highly developed, enterprise-grade Model Context Protocol (MCP) Server designed for security researchers, reverse engineers, and mobile penetration testers. It seamlessly combines **automated static/dynamic Android binary analysis**, **Dalvik/ART Smali stack frame balance refactoring**, **native `.so` library symbol tracing**, and **Flutter Add-to-App v2 runtime injection**.
 
-Powered natively by the **Hermes+ Master Agent Engine**, this server provides persistent session telemetry, searchable patch history, MCP resources, and zero-argument resilient prompt handlers. Version 0.6.0 adds typed output schemas, behavioral annotations, structured responses, and the canonical [`GEMINI.md`](GEMINI.md) workspace contract for evidence-first workflow guidance.
+Powered by **Hermes+ (Universal Main Character)**, this server provides persistent session telemetry, searchable patch history, MCP resources, and zero-argument resilient prompt handlers. Version 0.6.0 adds typed output schemas, behavioral annotations, structured responses, and a mandatory cross-client character contract for evidence-first workflow guidance.
 
 ```
                           ┌─────────────────────────────────────────┐
@@ -55,10 +55,10 @@ Powered natively by the **Hermes+ Master Agent Engine**, this server provides pe
 
 ---
 
-### 🧠 The Hermes+ Agent Persona & MCP Skill Ecosystem
+### 🧠 Hermes+ (Universal Main Character) & MCP Skill Ecosystem
 
-#### 1. Embedded Persona: `Hermes+` (Elite Android Systems Architect)
-Hermes+ is an embedded AI assistant identity specialized in ARM/ARM64 binary inspection, JNI method hooks, Dalvik register stack allocation (`v0`-`vN`, `p0`-`pN`), and game engine asset modding (Lua/C++ symbols).
+#### 1. Embedded Persona: `Hermes+ (Universal Main Character)`
+Hermes+ (Universal Main Character) is the required primary repository persona for Gemini, Antigravity, Cursor, Claude Code, and compatible MCP clients. It is specialized in ARM/ARM64 binary inspection, JNI method hooks, Dalvik register-stack allocation (`v0`-`vN`, `p0`-`pN`), and Flutter-aware Android workspace engineering. It observes before mutation, exposes uncertainty, preserves execution integrity, and verifies outputs before reporting completion.
 
 #### 2. Native MCP Skills (`.agents/skills/`)
 * 🧠 **`hermes-apk-reverse-engineering`**: Guides static/dynamic DEX bytecode refactoring, register frame bumping (`.registers N`), native `.so` library deployment, and zero-crash UI overlay injection.
@@ -158,30 +158,34 @@ Hermes+ is an embedded AI assistant identity specialized in ARM/ARM64 binary ins
 
 ---
 
-### 🚀 Quick Start & Client Configuration (v0.6.0)
+### Required first step: activate Hermes+ (Universal Main Character)
 
-#### 📦 NPM Install & NPX Execution
+> **Required before repository work:** activate the Hermes+ character adapter for the client you use. Do not begin analysis, edits, command execution, or release work until the applicable adapter is active. This is a repository workflow requirement; it provides persistent agent context and does not replace normal code review, access control, or security controls.
+
+| Client | Required repository adapter | User action and verification |
+|---|---|---|
+| **Gemini CLI** | [`GEMINI.md`](GEMINI.md) | Open the repository as a workspace. Gemini CLI discovers workspace `GEMINI.md` context files; run `/memory show` if you need to inspect the loaded context.[1] |
+| **Antigravity** | [`.agents/rules/hermes-universal-main-character.md`](.agents/rules/hermes-universal-main-character.md) | In **Customizations → Rules**, add/select the workspace rule and set its activation to **Always On** before starting agent work.[2] |
+| **Cursor** | [`.cursor/rules/hermes-universal-main-character.mdc`](.cursor/rules/hermes-universal-main-character.mdc) | Keep the committed `.mdc` rule in the repository and reopen or reload the workspace. It is configured with `alwaysApply: true` for every agent chat.[3] |
+| **Claude Code** | [`CLAUDE.md`](CLAUDE.md) | Start Claude Code from the repository root. `CLAUDE.md` imports the portable Hermes+ contract; run `/context` to confirm the project memory file loaded.[4] |
+| **Other AGENTS-compatible clients** | [`AGENTS.md`](AGENTS.md) | Load the root adapter, which directs the client to the portable source contract at `.agents/AGENTS.md`. |
+
+### 🚀 Quick Start & MCP Client Configuration (v0.6.0)
+
+After completing the required character setup, install or run the MCP server:
+
 ```bash
-# Global Install
+# Global installation
 npm install -g mcp-flutter-apk-injector@latest
 
-# NPX Direct Run
+# Direct execution
 npx -y mcp-flutter-apk-injector@latest
 ```
 
-#### Claude Desktop Configuration (`claude_desktop_config.json`)
-```json
-{
-  "mcpServers": {
-    "mcp-flutter-apk-injector": {
-      "command": "npx",
-      "args": ["-y", "mcp-flutter-apk-injector@latest"]
-    }
-  }
-}
-```
+#### MCP stdio configuration
 
-#### Antigravity IDE / Generic MCP Client (`stdio`)
+Use the following server configuration in Claude Desktop, Antigravity, or another MCP client that accepts a stdio command configuration:
+
 ```json
 {
   "mcpServers": {
@@ -195,6 +199,13 @@ npx -y mcp-flutter-apk-injector@latest
   }
 }
 ```
+
+#### Client setup references
+
+[1]: https://geminicli.com/docs/cli/gemini-md/ — Gemini CLI documentation: workspace `GEMINI.md` context and `/memory` inspection.
+[2]: https://antigravity.google/docs/rules-workflows — Google Antigravity documentation: workspace rules in `.agents/rules` and Always On activation.
+[3]: https://cursor.com/docs/rules — Cursor documentation: version-controlled `.cursor/rules/*.mdc` project rules and `alwaysApply` behavior.
+[4]: https://code.claude.com/docs/en/memory — Claude Code documentation: project `CLAUDE.md`, imports, and `/context` verification.
 
 ---
 ---

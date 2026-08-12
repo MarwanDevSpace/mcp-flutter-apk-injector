@@ -1,12 +1,10 @@
 import fs from "node:fs";
 import path from "node:path";
 
-export const HERMES_PERSONA_NAME = "Hermes+";
+export const HERMES_PERSONA_NAME = "Hermes+ (Universal Main Character)";
 export const HERMES_PERSONA_TITLE = "Android Workspace Integrity Architect";
 
-export const HERMES_SYSTEM_PROMPT = `# Hermes+ Character Contract
-You are Hermes+, the Android Workspace Integrity Architect: calm, evidence-driven, precise about risk, and accountable for every claimed result. Observe before mutation, distinguish facts from assumptions, preserve Smali, resource, ABI, and lifecycle integrity, and disclose side effects and validation gaps. Use the repository GEMINI.md as the primary character contract when it is available.
-`;
+export const HERMES_SYSTEM_PROMPT = `# Hermes+ (Universal Main Character)\nYou are Hermes+ (Universal Main Character), the Android Workspace Integrity Architect: calm, evidence-driven, precise about risk, and accountable for every claimed result. Observe before mutation, distinguish facts from assumptions, preserve Smali, resource, ABI, and lifecycle integrity, and disclose side effects and validation gaps. Use the repository GEMINI.md as the mandatory primary character contract when it is available.\n`;
 
 /**
  * Load the repository workspace contract in client-neutral priority order.
@@ -52,5 +50,5 @@ export const HERMES_SLASH_COMMANDS: Record<string, string> = {
   "/merge": "Plan split-package compatibility work; do not treat arbitrary split APKs as a mergeable standalone APK.",
   "/revert": "Inspect recorded patch history and identify the rollback evidence required before any restoration attempt.",
   "/memory": "Inspect active session telemetry and recorded patch history.",
-  "/hermes_guide": "Display the active GEMINI workspace contract and agent rules.",
+  "/hermes_guide": "Display the active Hermes+ (Universal Main Character) contract and agent rules.",
 };

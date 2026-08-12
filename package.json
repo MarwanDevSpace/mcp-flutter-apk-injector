@@ -39,6 +39,9 @@
     "dist",
     "templates",
     ".agents",
+    ".cursor",
+    "AGENTS.md",
+    "CLAUDE.md",
     "GEMINI.md",
     "README.md"
   ],

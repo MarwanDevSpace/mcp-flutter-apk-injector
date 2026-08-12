@@ -6,7 +6,7 @@ import type { DecompileResult, InjectionReport } from "../../src/types.js";
 
 describe("Hermes+ Persona & Embedded Skills", () => {
   it("exports Hermes+ identity and operational rules", () => {
-    expect(HERMES_PERSONA_NAME).toBe("Hermes+");
+    expect(HERMES_PERSONA_NAME).toBe("Hermes+ (Universal Main Character)");
     expect(HERMES_OPERATIONAL_RULES.length).toBeGreaterThan(0);
   });
 
