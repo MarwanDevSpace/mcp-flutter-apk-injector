@@ -53,6 +53,15 @@ describe("smali templates", () => {
     expect(m[1]).toContain(".locals 3");
   });
 
+  it("emits a defensive native-library fallback only when requested", () => {
+    const src = buildInjectedApplication({ ...cfg, nativeLibraryFallback: true });
+    expect(structureErrors(src)).toEqual([]);
+    expect(src).toContain(":try_start_libs");
+    expect(src).toContain(".catch Ljava/lang/Throwable; {:try_start_libs .. :try_end_libs} :catch_libs");
+    expect(src).toContain(":catch_libs");
+    expect(src).toContain("return-void");
+  });
+
   it("produces a structurally valid FlutterOverlayActivity reusing the cached engine", () => {
     const src = buildFlutterOverlayActivity(cfg);
     expect(structureErrors(src)).toEqual([]);

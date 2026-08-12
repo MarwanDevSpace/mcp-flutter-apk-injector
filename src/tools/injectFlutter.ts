@@ -2,21 +2,11 @@ import { injectFlutterRuntimeAndSmali } from "../core/injector.js";
 import type { InjectionReport } from "../types.js";
 import type { InjectFlutterParams } from "./schemas.js";
 
-export const injectFlutterTitle = "inject_flutter_runtime_and_smali";
+export const injectFlutterTitle = "Inject Flutter runtime into APK workspace";
 export const injectFlutterDescription =
-  "USAGE GUIDELINES: Step 4 of pipeline. Must be run after decompile_apk and synthesize_flutter_payload. Run immediately before patch_manifest_and_config.\n" +
-  "PURPOSE: Merge synthesized Flutter payload (libflutter.so, libapp.so, flutter_assets) and inject Smali engine bootstrap code into a decompiled APK workspace.\n" +
-  "SIDE EFFECTS: In-place mutation of workspaceDir tree. Copies native libraries into lib/<abi>/, asset bundles into assets/, and injects new Smali classes/methods into smali/.\n" +
-  "PARAMETERS & CONSTRAINTS:\n" +
-  "  • workspaceDir: Decompiled APK workspace directory produced by decompile_apk.\n" +
-  "  • payloadDir: Directory containing synthesized Flutter payload produced by synthesize_flutter_payload.\n" +
-  "  • injectionMode: Enum strategy — 'direct_application_hook' (hooks host Application class), 'activity_overlay' (adds dedicated FlutterOverlayActivity), 'view_tree_injection' (attaches FlutterView to launcher Activity), 'headless_engine' (background engine without UI).\n" +
-  "  • engineId: Optional FlutterEngineCache ID string (defaults to 'injected_flutter_engine').\n" +
-  "  • methodChannelBridge: Optional config for two-way Smali<->Dart MethodChannel communication.\n" +
-  "  • attachBaseContextHook: Optional boolean to inject engine init into attachBaseContext(Context) as well as onCreate().\n" +
-  "  • nativeLibraryFallback: Optional boolean to wrap System.loadLibrary in defensive try-catch blocks.\n" +
-  "PREREQUISITES: Extracted APK workspace from decompile_apk and synthesized payload from synthesize_flutter_payload.\n" +
-  "RETURNS: InjectionReport detailing injected native libraries, asset files, allocated Smali register bounds, and patch status.";
+  "Inject a synthesized Flutter payload and generated Smali bootstrap into a decoded APK workspace after decompile_apk and synthesize_flutter_payload have completed. " +
+  "This mutates workspaceDir by adding libraries, assets, and Smali files; run analyze_injection_surface first when the host lifecycle or ABI compatibility is uncertain. " +
+  "Choose activity_overlay for the supported cached-engine screen path, use direct_application_hook only for a resolvable host Application, and treat view_tree_injection as experimental because it requires a lifecycle-compatible host.";
 
 export async function injectFlutter(
   params: InjectFlutterParams,
@@ -27,5 +17,7 @@ export async function injectFlutter(
     injectionMode: params.injectionMode,
     methodChannel: params.methodChannelBridge,
     engineId: params.engineId,
+    attachBaseContextHook: params.attachBaseContextHook,
+    nativeLibraryFallback: params.nativeLibraryFallback,
   });
 }

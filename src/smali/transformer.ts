@@ -73,6 +73,36 @@ export async function injectApplicationHook(
 }
 
 /**
+ * Inject an optional fallback initializer into Application.attachBaseContext.
+ * The call is inserted immediately before the final return, after the host has
+ * had a chance to attach its base context and invoke its own superclass logic.
+ */
+export async function injectAttachBaseContextHook(
+  smaliFilePath: string,
+  bootstrapDescriptor: string,
+): Promise<SmaliPatchResult> {
+  const abs = await assertFileExists(smaliFilePath);
+  const content = await readText(abs);
+  const call = `invoke-static {p1}, ${bootstrapDescriptor}->initEngineFromContext(Landroid/content/Context;)V`;
+  const { content: patched } = injectInstructions(
+    content,
+    "attachBaseContext",
+    "(Landroid/content/Context;)V",
+    [call],
+    { atStart: false },
+  );
+
+  await writeText(abs, patched);
+  logger.info("patched application attachBaseContext", { file: smaliFilePath });
+
+  return {
+    filePath: abs,
+    method: "attachBaseContext",
+    injectedLineCount: 1,
+  };
+}
+
+/**
  * Verify that an injected smali file still assembles syntactically at the
  * structural level: balanced .method/.end method, valid header, and that the
  * bootstrap descriptor reference resolves to an existing class file.

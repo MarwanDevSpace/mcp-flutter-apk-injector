@@ -1,39 +1,34 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import type { ToolCallback } from "@modelcontextprotocol/sdk/server/mcp.js";
-import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
+import type { CallToolResult, ToolAnnotations } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
 import { logger, setLogLevel } from "./core/logger.js";
+import type { LogLevel } from "./core/logger.js";
 import { MCPFlutterError, JsonRpcErrorCode } from "./core/errors.js";
 
 import {
   decompileApk,
-  decompileApkTitle,
   decompileApkDescription,
 } from "./tools/decompileApk.js";
 import {
   analyzeSurface,
-  analyzeSurfaceTitle,
   analyzeSurfaceDescription,
 } from "./tools/analyzeSurface.js";
 import {
   synthesizePayload,
-  synthesizePayloadTitle,
   synthesizePayloadDescription,
 } from "./tools/synthesizePayload.js";
 import {
   injectFlutter,
-  injectFlutterTitle,
   injectFlutterDescription,
 } from "./tools/injectFlutter.js";
 import {
   patchManifest,
-  patchManifestTitle,
   patchManifestDescription,
 } from "./tools/patchManifest.js";
 import {
   recompileAlignSign,
-  recompileSignTitle,
   recompileSignDescription,
 } from "./tools/recompileSign.js";
 import {
@@ -44,6 +39,15 @@ import {
   PatchManifestSchema,
   RecompileSignSchema,
 } from "./tools/schemas.js";
+import {
+  AnalyzeSurfaceOutputSchema,
+  DecompileApkOutputSchema,
+  InjectFlutterOutputSchema,
+  PatchManifestOutputSchema,
+  RecompileSignOutputSchema,
+  SynthesizePayloadOutputSchema,
+  type OutputShape,
+} from "./tools/outputSchemas.js";
 
 import { SessionMemoryManager } from "./agent/memory.js";
 import { registerAgentResources } from "./agent/resources.js";
@@ -61,55 +65,95 @@ import type {
 export interface McpFlutterServerOptions {
   name?: string;
   version?: string;
-  logLevel?: string;
+  logLevel?: LogLevel;
 }
 
 export function createServer(options: McpFlutterServerOptions = {}): McpServer {
   const server = new McpServer({
     name: options.name ?? "mcp-flutter-apk-injector",
-    version: options.version ?? "0.5.5",
+    version: options.version ?? "0.6.0",
   });
 
   const memory = SessionMemoryManager.getInstance();
 
-  // Register Standard Engineering Tools with Automatic Memory Telemetry
-  register(server, decompileApkTitle, decompileApkDescription, DecompileApkSchema, async (params) => {
+  register(server, {
+    name: "decompile_apk",
+    title: "Decode Android APK into workspace",
+    description: decompileApkDescription,
+    inputSchema: DecompileApkSchema,
+    outputSchema: DecompileApkOutputSchema,
+    annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false },
+  }, async (params) => {
     const res = await decompileApk(params);
     memory.updateFromDecompile(res as DecompileResult);
     return res;
   });
 
-  register(server, analyzeSurfaceTitle, analyzeSurfaceDescription, AnalyzeSurfaceSchema, async (params) => {
+  register(server, {
+    name: "analyze_injection_surface",
+    title: "Analyze APK integration surface",
+    description: analyzeSurfaceDescription,
+    inputSchema: AnalyzeSurfaceSchema,
+    outputSchema: AnalyzeSurfaceOutputSchema,
+    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+  }, async (params) => {
     const res = await analyzeSurface(params);
     memory.updateFromSurface(res as InjectionSurface);
     return res;
   });
 
-  register(server, synthesizePayloadTitle, synthesizePayloadDescription, SynthesizePayloadSchema, async (params) => {
+  register(server, {
+    name: "synthesize_flutter_payload",
+    title: "Build Flutter runtime payload",
+    description: synthesizePayloadDescription,
+    inputSchema: SynthesizePayloadSchema,
+    outputSchema: SynthesizePayloadOutputSchema,
+    annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false },
+  }, async (params) => {
     const res = await synthesizePayload(params);
     memory.updateFromPayload(res as SynthesizedPayload);
     return res;
   });
 
-  register(server, injectFlutterTitle, injectFlutterDescription, InjectFlutterSchema, async (params) => {
+  register(server, {
+    name: "inject_flutter_runtime_and_smali",
+    title: "Inject Flutter runtime into APK workspace",
+    description: injectFlutterDescription,
+    inputSchema: InjectFlutterSchema,
+    outputSchema: InjectFlutterOutputSchema,
+    annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false },
+  }, async (params) => {
     const res = await injectFlutter(params);
     memory.updateFromInjection(res as InjectionReport);
     return res;
   });
 
-  register(server, patchManifestTitle, patchManifestDescription, PatchManifestSchema, async (params) => {
+  register(server, {
+    name: "patch_manifest_and_config",
+    title: "Apply Android manifest configuration",
+    description: patchManifestDescription,
+    inputSchema: PatchManifestSchema,
+    outputSchema: PatchManifestOutputSchema,
+    annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false },
+  }, async (params) => {
     const res = await patchManifest(params);
     memory.updateFromManifest(res as ManifestPatchResult);
     return res;
   });
 
-  register(server, recompileSignTitle, recompileSignDescription, RecompileSignSchema, async (params) => {
+  register(server, {
+    name: "recompile_align_and_sign",
+    title: "Build, align, and sign APK output",
+    description: recompileSignDescription,
+    inputSchema: RecompileSignSchema,
+    outputSchema: RecompileSignOutputSchema,
+    annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false },
+  }, async (params) => {
     const res = await recompileAlignSign(params);
     memory.updateFromSigning(res as SigningResult);
     return res;
   });
 
-  // Register Embedded Agent Resources, Tools, and Prompts
   registerAgentResources(server);
   registerAgentTools(server);
   registerAgentPrompts(server);
@@ -120,27 +164,43 @@ export function createServer(options: McpFlutterServerOptions = {}): McpServer {
 type RawShape = Record<string, z.ZodTypeAny>;
 type ShapeOutput<S extends RawShape> = { [K in keyof S]: z.output<S[K]> };
 
+interface ToolDefinition<S extends RawShape> {
+  name: string;
+  title: string;
+  description: string;
+  inputSchema: S;
+  outputSchema: OutputShape;
+  annotations: ToolAnnotations;
+}
+
 function textResult(json: unknown): CallToolResult {
-  return { content: [{ type: "text", text: JSON.stringify(json, null, 2) }] };
+  return {
+    content: [{ type: "text", text: JSON.stringify(json, null, 2) }],
+    structuredContent: json as Record<string, unknown>,
+  };
 }
 
 function register<S extends RawShape>(
   server: McpServer,
-  toolName: string,
-  description: string,
-  inputSchema: S,
+  definition: ToolDefinition<S>,
   handler: (params: ShapeOutput<S>) => Promise<unknown>,
 ): void {
   const cb: ToolCallback<RawShape> = async (args, _extra) => {
     try {
       const params = args as ShapeOutput<S>;
-      const result = await handler(params);
-      return textResult(result);
+      return textResult(await handler(params));
     } catch (err) {
       return toErrorResult(err);
     }
   };
-  server.registerTool(toolName, { title: toolName, description, inputSchema }, cb as never);
+
+  server.registerTool(definition.name, {
+    title: definition.title,
+    description: definition.description,
+    inputSchema: definition.inputSchema,
+    outputSchema: definition.outputSchema,
+    annotations: definition.annotations,
+  }, cb as never);
 }
 
 function toErrorResult(err: unknown): CallToolResult {
@@ -180,12 +240,8 @@ function toErrorResult(err: unknown): CallToolResult {
 }
 
 export async function runServer(options: McpFlutterServerOptions = {}): Promise<void> {
-  if (options.logLevel) setLogLevel(options.logLevel as never);
+  if (options.logLevel) setLogLevel(options.logLevel);
   const server = createServer(options);
   const transport = new StdioServerTransport();
-  logger.info(`Starting ${options.name ?? "mcp-flutter-apk-injector"} MCP server`);
   await server.connect(transport);
 }
-
-// Re-export for embedders.
-export { MCPFlutterError, JsonRpcErrorCode };

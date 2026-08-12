@@ -16,7 +16,7 @@ describe("Hermes+ Persona & Embedded Skills", () => {
 
     const hermesSkill = getSkill("hermes-apk-reverse-engineering");
     expect(hermesSkill).toBeDefined();
-    expect(hermesSkill?.markdownContent).toContain("Hermes+ Deep Android & Game Reverse Engineering Skill");
+    expect(hermesSkill?.markdownContent).toContain("Hermes+ Android Workspace Integrity Skill");
 
     const orchSkill = getSkill("mcp-toolchain-orchestrator");
     expect(orchSkill).toBeDefined();

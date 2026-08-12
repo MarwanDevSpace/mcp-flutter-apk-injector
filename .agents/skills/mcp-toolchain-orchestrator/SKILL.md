@@ -1,33 +1,37 @@
 ---
 name: mcp-toolchain-orchestrator
-description: Orchestrate high-precision MCP toolchain pipelines, agent slash commands (/scan, /decompile, /inject, /patch, /recompile, /pipeline), and automated build/publish workflows.
+description: Maintain and release MCP toolchains with typed contracts, behavioral metadata, validation gates, and registry synchronization.
 ---
 
-# ⚡ MCP Toolchain Orchestrator Skill
+# MCP Toolchain Orchestrator Skill
 
-This skill provides operational patterns for managing, testing, and deploying high-performance Model Context Protocol (MCP) servers and agent slash command handlers within the Antigravity IDE and desktop agent environments.
+This skill applies the canonical `GEMINI.md` release and tool-definition rules to `mcp-flutter-apk-injector`.
 
----
+## MCP contract rules
 
-## ⚡ 1. Agent Slash Commands & Zero-Argument Resiliency
+Every public primary tool must publish a human-readable title, short purpose-first description, complete input schema descriptions, output schema, and non-contradictory annotations. Keep long parameter documentation in the schema rather than duplicating it in the description.
 
-MCP prompt definitions registered on `McpServer` must support zero-argument invocations to prevent `-32602: Invalid arguments` errors when triggered from agent UI pickers or slash commands:
+| Requirement | Verification |
+|---|---|
+| Read-only behavior | `readOnlyHint: true`, no target-workspace write, deterministic repeat behavior where claimed. |
+| Mutating behavior | `destructiveHint: true`, description says what paths/artifacts can change, and output lists changed files or output paths. |
+| Input semantics | All top-level and nested fields have descriptions; enums/defaults explain operational effects. |
+| Output semantics | Handler returns `structuredContent` matching the registered output schema as well as readable text JSON. |
+| Handler parity | Every public parameter is forwarded to implementation or removed; no inert advertised setting remains. |
 
-* **`/scan`**: Diagnostic audit scan of decompiled APK workspace.
-* **`/decompile`**: Disassemble target `.apk` into Smali bytecode and resources.
-* **`/inject`**: Execute Flutter engine runtime, native `.so` library, and Smali glue code injection.
-* **`/patch`**: Patch `AndroidManifest.xml` with permissions and application setup.
-* **`/recompile`**: Rebuild (`apktool b`), align (`zipalign`), and sign (`apksigner`) target APK.
-* **`/pipeline`**: Full automated end-to-end decompilation ➔ analysis ➔ injection ➔ recompilation workflow.
+## Prompt and command discipline
 
----
+Prompt handlers must support zero-argument invocation. `/merge` and `/revert` are currently evidence/planning commands: neither should imply that split APKs were merged or workspace files restored without verification artifacts.
 
-## ⚙️ 2. MCP Server Quality & Release Protocol
+## Release protocol
 
-When updating an MCP server package:
-1. **Type Checking:** Run `tsc -p tsconfig.json --noEmit` — must pass with 0 errors.
-2. **Linter:** Run `eslint "src/**/*.ts" "test/**/*.ts"` — must pass with 0 errors/warnings.
-3. **Automated Testing:** Run `vitest run` — verify all unit and integration tests pass cleanly.
-4. **NPM Packaging Dry-Run:** Run `npm pack --dry-run` — verify tarball structure, binary files, and `.d.ts` type declarations.
-5. **Git Synchronization:** Commit and push changes to remote GitHub repository (`git push origin main`).
-6. **Public Distribution:** Publish updated version to public NPM registry (`npm publish --access public`).
+1. Update `package.json`, `package-lock.json`, runtime version defaults, `GEMINI.md`, `.agents/AGENTS.md`, `CHANGELOG.md`, and release notes together.
+2. Run `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`, and `npm pack --dry-run`.
+3. Inspect the emitted MCP contract in tests, including titles, annotations, input/output schemas, and prompt registration.
+4. Review `git diff --check` and the full staged diff before committing.
+5. Commit locally with a release-scoped message. Creating GitHub Releases, pushing to remote, publishing to npm, or changing public registry state requires explicit owner confirmation.
+6. After an approved public release, create the corresponding GitHub Release, use Glama’s **Sync Server** control, and verify the public listing’s version, latest release, schemas, annotations, and score capture.
+
+## Glama baseline policy
+
+Glama currently records an older `v0.1.2` release while npm/repository metadata reached `v0.5.5` before this update. Preserve the baseline in `docs/quality/glama/`, then record the post-release version and score refresh. Treat a stale public release record as incomplete release work; do not mark registry verification complete until the listing is current.

@@ -26,7 +26,7 @@
 
 `mcp-flutter-apk-injector` is a highly developed, enterprise-grade Model Context Protocol (MCP) Server designed for security researchers, reverse engineers, and mobile penetration testers. It seamlessly combines **automated static/dynamic Android binary analysis**, **Dalvik/ART Smali stack frame balance refactoring**, **native `.so` library symbol tracing**, and **Flutter Add-to-App v2 runtime injection**.
 
-Powered natively by the **Hermes+ Master Agent Engine**, this server elevates standard tool-dispatching into an **autonomous, self-correcting, stateful agentic system** featuring persistent session memory, searchable patch history graphs, native MCP resource streams, and zero-argument resilient prompt handlers.
+Powered natively by the **Hermes+ Master Agent Engine**, this server provides persistent session telemetry, searchable patch history, MCP resources, and zero-argument resilient prompt handlers. Version 0.6.0 adds typed output schemas, behavioral annotations, structured responses, and the canonical [`GEMINI.md`](GEMINI.md) workspace contract for evidence-first workflow guidance.
 
 ```
                           ┌─────────────────────────────────────────┐
@@ -36,7 +36,7 @@ Powered natively by the **Hermes+ Master Agent Engine**, this server elevates st
                                                │
                                                ▼
   ┌────────────────────────────────────────────────────────────────────────────────────────┐
-  │                           mcp-flutter-apk-injector (v0.5.2)                            │
+  │                           mcp-flutter-apk-injector (v0.6.0)                            │
   │                                                                                        │
   │  ┌────────────────────────┐  ┌─────────────────────────┐  ┌─────────────────────────┐  │
   │  │  Hermes+ Agent Engine  │  │ Session Memory Manager  │  │ Embedded Skills & Prompts│  │
@@ -125,7 +125,7 @@ Hermes+ is an embedded AI assistant identity specialized in ARM/ARM64 binary ins
 | `synthesize_flutter_payload` | Extract Flutter runtime artifacts (`libflutter.so`, `libapp.so`, `flutter_assets`, ICU data) ready to merge into decompiled APK workspace. |
 | `inject_flutter_runtime_and_smali` | Inject Flutter assets, native `.so` libraries, and Smali glue code (`InjectedApplication`, `FlutterOverlayActivity`, or `MethodChannel` bridge) preserving Dalvik stack register bounds. |
 | `patch_manifest_and_config` | Patch `AndroidManifest.xml` with permissions (`INTERNET`, `WAKE_LOCK`), Application class configuration, cleartext traffic allowance, and activity registrations. |
-| `recompile_align_and_sign` | Rebuild workspace with `apktool`, 4-byte align with `zipalign`, and sign with `apksigner` using V1/V2/V3 schemes and debug keystore fallback. |
+| `recompile_align_and_sign` | Rebuild workspace with `apktool`, align and verify with `zipalign`, then sign and verify with `apksigner`. Outputs are explicitly classified as test/debug or signing-context-dependent artifacts. |
 | `get_agent_context` | Retrieve Hermes+ persona, loaded skills, live memory summary, and pipeline telemetry. |
 | `update_agent_memory` | Explicitly update active session memory state with notes, identified targets, or patch logs. |
 | `query_memory_graph` | Search and inspect historical patch logs, register allocations, and decompilation metadata. |
@@ -137,7 +137,7 @@ Hermes+ is an embedded AI assistant identity specialized in ARM/ARM64 binary ins
 | Injection Strategy | Primary Smali Target | Description |
 | --- | --- | --- |
 | **`activity_overlay`** | `FlutterOverlayActivity` | Launches a dedicated Flutter Activity reusing a pre-warmed cached engine for custom UI overlays inside apps or mobile games. |
-| **`view_tree_injection`** | Launcher Activity `onCreate()` | Programmatically attaches `FlutterView` to decor view tree of target Activity. |
+| **`view_tree_injection`** | Launcher Activity `onCreate()` | **Experimental:** attaches `FlutterView` to a target Activity only when a lifecycle-compatible host adapter has been verified. |
 | **`headless_engine`** | `BackgroundFlutterEngine` | Initializes a background engine without UI for headless Dart execution, channel routing, and telemetry. |
 | **`direct_application_hook`** | `Application.onCreate()` / `attachBaseContext()` | Directly instruments existing Application class in Smali without modifying `android:name` in `AndroidManifest.xml`. |
 
@@ -150,13 +150,15 @@ Hermes+ is an embedded AI assistant identity specialized in ARM/ARM64 binary ins
 - **`/inject`**: Execute Flutter runtime payload & Smali glue code injection into target APK.
 - **`/patch`**: Patch `AndroidManifest.xml` (application class, hardware acceleration, cleartext traffic, permissions).
 - **`/recompile`**: Repackage (`apktool b`), byte-align (`zipalign`), and cryptographically sign (`apksigner`) modified target.
-- **`/pipeline`**: Full automated end-to-end decompilation ➔ analysis ➔ payload synthesis ➔ injection ➔ manifest patch ➔ recompilation pipeline.
+- **`/pipeline`**: Evidence-first decompilation ➔ analysis ➔ payload synthesis ➔ injection ➔ manifest patch ➔ build verification workflow.
+- **`/merge`**: Plan split-package compatibility without claiming arbitrary APK splits can be file-merged into a standalone APK.
+- **`/revert`**: Inspect patch-history and backup evidence; restoration is only available when verified patch-set artifacts exist.
 - **`/memory`**: Inspect active session memory state, historical patch logs, and allocated register frames.
 - **`/hermes_guide`**: Display Hermes+ architecture rules and reverse engineering guidelines.
 
 ---
 
-### 🚀 Quick Start & Client Configuration (v0.5.2)
+### 🚀 Quick Start & Client Configuration (v0.6.0)
 
 #### 📦 NPM Install & NPX Execution
 ```bash

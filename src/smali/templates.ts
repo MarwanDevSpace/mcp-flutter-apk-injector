@@ -58,6 +58,8 @@ export interface InjectionTemplateConfig {
   engineId: string;
   /** Optional two-way method channel bridge config. */
   channel?: MethodChannelBridgeConfig;
+  /** Return from generated initialization when native Flutter libraries cannot load. */
+  nativeLibraryFallback?: boolean;
 }
 
 export function buildInjectedApplication(cfg: InjectionTemplateConfig): string {
@@ -68,6 +70,27 @@ export function buildInjectedApplication(cfg: InjectionTemplateConfig): string {
   const engineId = cfg.engineId;
   const bootstrap = classToDescriptor(cfg.bootstrapClass);
   const hasChannel = Boolean(cfg.channel);
+  const nativeLoadLines = cfg.nativeLibraryFallback
+    ? [
+        `    :try_start_libs`,
+        `    const-string v0, "flutter"`,
+        `    invoke-static {v0}, Ljava/lang/System;->loadLibrary(Ljava/lang/String;)V`,
+        `    const-string v0, "app"`,
+        `    invoke-static {v0}, Ljava/lang/System;->loadLibrary(Ljava/lang/String;)V`,
+        `    :try_end_libs`,
+        `    .catch Ljava/lang/Throwable; {:try_start_libs .. :try_end_libs} :catch_libs`,
+        `    goto :libs_loaded`,
+        `    :catch_libs`,
+        `    move-exception v0`,
+        `    return-void`,
+        `    :libs_loaded`,
+      ]
+    : [
+        `    const-string v0, "flutter"`,
+        `    invoke-static {v0}, Ljava/lang/System;->loadLibrary(Ljava/lang/String;)V`,
+        `    const-string v0, "app"`,
+        `    invoke-static {v0}, Ljava/lang/System;->loadLibrary(Ljava/lang/String;)V`,
+      ];
 
   const lines: string[] = [
     `.class public L${app.slice(1)}`,
@@ -91,13 +114,7 @@ export function buildInjectedApplication(cfg: InjectionTemplateConfig): string {
     `    invoke-super {p0}, ${superDesc}->onCreate()V`,
     ``,
     `    # Load native libraries (flutter runtime + Dart AOT snapshot loader)`,
-    `    const-string v0, "flutter"`,
-    ``,
-    `    invoke-static {v0}, Ljava/lang/System;->loadLibrary(Ljava/lang/String;)V`,
-    ``,
-    `    const-string v0, "app"`,
-    ``,
-    `    invoke-static {v0}, Ljava/lang/System;->loadLibrary(Ljava/lang/String;)V`,
+    ...nativeLoadLines,
     ``,
     `    # FlutterEngine engine = new FlutterEngine(this)`,
     `    new-instance v0, Lio/flutter/embedding/engine/FlutterEngine;`,

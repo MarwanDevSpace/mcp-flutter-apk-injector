@@ -1,6 +1,6 @@
 {
   "name": "mcp-flutter-apk-injector",
-  "version": "0.5.5",
+  "version": "0.6.0",
   "description": "Enterprise-grade Model Context Protocol (MCP) server for Android APK reverse engineering, Smali refactoring, native JNI tracing, and Flutter runtime injection powered by Hermes+ Agent Engine.",
   "type": "module",
   "main": "dist/index.js",
@@ -39,6 +39,7 @@
     "dist",
     "templates",
     ".agents",
+    "GEMINI.md",
     "README.md"
   ],
   "scripts": {

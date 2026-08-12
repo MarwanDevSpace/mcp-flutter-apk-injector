@@ -1,83 +1,43 @@
 ---
 name: hermes-apk-reverse-engineering
-description: Master Android & Game reverse engineering, DEX/Smali stack balance refactoring, native .so library symbol tracing, Lua/asset script modding, and seamless Flutter runtime overlay injection.
+description: Analyze authorized Android APK workspaces with evidence-first APKTool, Smali, native-library, manifest, and Flutter integration workflows.
 ---
 
-# 🛡️ Hermes+ Deep Android & Game Reverse Engineering Skill
+# Hermes+ Android Workspace Integrity Skill
 
-This skill provides comprehensive instructions for executing deep static and dynamic bytecode analysis, native `.so` assembly inspection, DEX/Smali refactoring, game script tracing (Lua, C++, JNI), AXML manifest surgery, native library deployment, and Flutter runtime injection on Android APK targets using the **`mcp-flutter-apk-injector`** toolchain.
+This skill implements the canonical `GEMINI.md` contract for authorized Android workspace analysis and transformation. It is complementary guidance; when it differs from `GEMINI.md`, the root workspace contract is authoritative.
 
----
+## Evidence-first workflow
 
-## 🧠 1. The 5-Step Deep Reverse Engineering Pipeline
+| Stage | Action | Required evidence |
+|---|---|---|
+| Decode | Run `decompile_apk` into a dedicated workspace. | Input path/hash, package, SDK values, manifest path, Smali roots, and ABI directories. |
+| Analyze | Run `analyze_injection_surface` without workspace mutation. | Application/activity/JNI/Flutter findings, warnings, and candidate hooks. |
+| Prepare | Build or validate the Flutter payload. | ABI coverage, native libraries, assets, build mode, engine identity, and warning set. |
+| Integrate | Run `inject_flutter_runtime_and_smali` only after selecting a supported mode. | Generated descriptors, changed files, register/lifecycle evidence, and warnings. |
+| Configure | Run `patch_manifest_and_config` for reviewed manifest changes. | Exact component, permission, application, and rendering deltas. |
+| Verify | Run `recompile_align_and_sign` as the final output step. | Build, alignment, signature, certificate context, output path, and artifact classification. |
 
-When analyzing, modifying, or patching an Android application or mobile game (e.g. modifying UI elements, altering game buttons, injecting Flutter popups/overlays):
+## Smali and Android integrity rules
 
-```
-                       [Target .apk / Workspace]
-                                  │
-                                  ▼
- ┌─────────────────────────────────────────────────────────────────┐
- │ STEP 1: Binary & Asset Deconstruction (decompile_apk)           │
- │ Extract DEX Smali, lib/*.so binaries, AXML, assets/ (Lua/JSON)  │
- └─────────────────────────────────────────────────────────────────┘
-                                  │
-                                  ▼
- ┌─────────────────────────────────────────────────────────────────┐
- │ STEP 2: Precision Native & Smali Tracing (analyze_injection)   │
- │ Trace UI click handlers, View$OnClickListener, 0x7f... R-ids,   │
- │ C/C++ JNI native symbols, and Lua script hook points             │
- └─────────────────────────────────────────────────────────────────┘
-                                  │
-                                  ▼
- ┌─────────────────────────────────────────────────────────────────┐
- │ STEP 3: Seamless Payload Injection (inject_flutter_runtime)     │
- │ Synthesize Flutter/Smali payload; balance register frames       │
- │ (.registers N); inject native-looking UI without crashes       │
- └─────────────────────────────────────────────────────────────────┘
-                                  │
-                                  ▼
- ┌─────────────────────────────────────────────────────────────────┐
- │ STEP 4: Manifest Surgery & Assembly (patch_manifest & recompile)│
- │ Patch AndroidManifest.xml (permissions, application, ABIs);     │
- │ Rebuild (apktool b), Align (zipalign 4-byte), Sign (apksigner)  │
- └─────────────────────────────────────────────────────────────────┘
-                                  │
-                                  ▼
- ┌─────────────────────────────────────────────────────────────────┐
- │ STEP 5: Architectural Summary & Chain Memory Logging             │
- │ Document modified Smali paths, .so symbol offsets, injected    │
- │ channels, register maps, and verified output APK location       │
- └─────────────────────────────────────────────────────────────────┘
-```
+1. Treat `.registers`, `.locals`, wide values, parameter registers, labels, and try/catch regions as executable contracts. Never insert instructions based only on a textual method-name match when an overload/signature or control-flow location remains ambiguous.
+2. Keep `invoke-super` and host lifecycle behavior intact. The optional `attachBaseContextHook` is inserted after base-context attachment and must be reported as unavailable rather than silently skipped when the target lacks a suitable method.
+3. Validate every generated class descriptor, manifest class name, resource identifier, asset path, and ABI directory against the decoded workspace before building.
+4. Keep analysis read-only. Any tool that copies assets/libraries, creates Smali, changes XML, runs a build command, writes a signed APK, or replaces an output must disclose that behavior in its result and MCP annotations.
 
----
+## Flutter mode decision table
 
-## 📐 2. Register Frame Balance & Stack Safety Rules
+| Mode | Decision rule |
+|---|---|
+| `activity_overlay` | Preferred user-interface mode. Require a cached engine before activity launch and preserve route/entrypoint decisions made before engine startup. |
+| `direct_application_hook` | Use only when the target Application class and method implementation are resolvable. Record all changed host methods. |
+| `headless_engine` | Use only for non-UI runtime work and do not invent activity or service lifecycle support. |
+| `view_tree_injection` | Experimental. Require an exact lifecycle-compatible adapter and host-specific validation before enabling. |
 
-When generating or injecting Dalvik/Smali instructions:
-1. **Local vs Parameter Registers:**
-   - Parameter registers (`p0`, `p1`, `p2`, ...) map to the highest numbered register slots in non-static methods (`p0` is `this`).
-   - Local registers (`v0`, `v1`, `v2`, ...) map to local variable slots.
-2. **Register Allocation Bumping:**
-   - When injecting temporary registers into existing methods, inspect `.registers N` or `.locals M`.
-   - Update `.registers` to `N + required_temps` using `planInjectedRegisters()`.
-3. **Register Non-Interference:**
-   - Inject temporary instructions using registers higher than `M` (e.g. `vM`, `vM+1`) to prevent overwriting active local variables.
+## Native library and build policy
 
----
+`nativeLibraryFallback` prevents generated initialization from crashing immediately when Flutter libraries cannot load. It is not a successful engine start and must remain visible in the warning set. Package output only after APKTool build, alignment, and signature verification succeed. Describe a default-key artifact as a debug/test artifact unless a verified signing relationship establishes otherwise.
 
-## 🎮 3. Game & App Patching Strategies
+## Split sets and restoration
 
-| Target Type | Method / Injection Hook | Primary Inspection Points | Description |
-| --- | --- | --- | --- |
-| **Native Game Engine** | Lua/C++ JNI Binding | `assets/mods/*.lua`, `lib/*.so` symbols | Trace native function offsets, modify Lua script triggers, or hook JNI entry points. |
-| **Android Native App** | `direct_application_hook` | `Application.onCreate()`, `attachBaseContext()` | Instrument Application class directly in Smali without changing `android:name` in Manifest. |
-| **Flutter UI Overlay** | `activity_overlay` | `FlutterOverlayActivity` | Launch dedicated Flutter activity reusing pre-warmed cached engine for custom UI inside games/apps. |
-| **View Tree Injection** | `view_tree_injection` | Launcher Activity `onCreate()` | Programmatically attach `FlutterView` to decor view tree of target Activity. |
-
----
-
-## 🔒 4. Recompile & Signing Guarantee
-All bytecode and manifest alterations must strictly preserve Dalvik stack syntax to eliminate assembly errors during `apktool b`. Recompilation, 4-byte byte alignment (`zipalign`), and cryptographic signing (`apksigner`) with automatic debug keystore fallback guarantee an installable output binary.
-
+`/merge` performs split-set planning: validate package identity, version, signer, ABI, language/density, feature, and manifest dependencies before proposing an install set. Do not merge arbitrary split directories into a base APK. `/revert` is limited to verified patch-set backups and matching hashes; recorded telemetry alone is insufficient for a binary restore.

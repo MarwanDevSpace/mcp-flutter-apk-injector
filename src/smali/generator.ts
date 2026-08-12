@@ -37,6 +37,8 @@ export interface SmaliGenerationOptions {
   applicationSuperClass?: string | null;
   injectionModes: InjectionMode[];
   channel?: MethodChannelBridgeConfig;
+  /** Wrap generated native-library loading in a defensive fallback path. */
+  nativeLibraryFallback?: boolean;
   classNamePrefix?: string;
 }
 
@@ -62,6 +64,7 @@ export async function generateSmaliClasses(options: SmaliGenerationOptions): Pro
     channelHandlerClass: handlerClass,
     engineId: options.engineId,
     channel: options.channel,
+    nativeLibraryFallback: options.nativeLibraryFallback,
   };
 
   const generated: GeneratedClass[] = [];

@@ -21,6 +21,13 @@ interface RegisteredToolLike {
   title?: string;
   description?: string;
   inputSchema?: unknown;
+  outputSchema?: unknown;
+  annotations?: {
+    readOnlyHint?: boolean;
+    destructiveHint?: boolean;
+    idempotentHint?: boolean;
+    openWorldHint?: boolean;
+  };
   handler?: unknown;
   enabled?: boolean;
 }
@@ -30,21 +37,42 @@ describe("server", () => {
     const server = createServer() as unknown as { _registeredTools: Record<string, RegisteredToolLike> };
     const names = Object.keys(server._registeredTools);
     expect(names).toHaveLength(9);
-    for (const expected of EXPECTED_CORE_TOOLS) {
-      expect(names).toContain(expected);
-    }
-    for (const expected of EXPECTED_AGENT_TOOLS) {
-      expect(names).toContain(expected);
+    for (const expected of EXPECTED_CORE_TOOLS) expect(names).toContain(expected);
+    for (const expected of EXPECTED_AGENT_TOOLS) expect(names).toContain(expected);
+  });
+
+  it("exposes complete, agent-usable contracts for every primary pipeline tool", () => {
+    const server = createServer() as unknown as { _registeredTools: Record<string, RegisteredToolLike> };
+    for (const name of EXPECTED_CORE_TOOLS) {
+      const tool = server._registeredTools[name];
+      expect(tool, `tool ${name}`).toBeTruthy();
+      expect(tool!.description).toBeTruthy();
+      expect(tool!.title).toBeTruthy();
+      expect(tool!.title).not.toBe(name);
+      expect(tool!.inputSchema).toBeDefined();
+      expect(typeof tool!.inputSchema).toBe("object");
+      expect(tool!.outputSchema).toBeDefined();
+      expect(typeof tool!.outputSchema).toBe("object");
+      expect(tool!.annotations).toBeDefined();
+      expect(typeof tool!.annotations!.readOnlyHint).toBe("boolean");
+      expect(typeof tool!.annotations!.destructiveHint).toBe("boolean");
+      expect(typeof tool!.annotations!.idempotentHint).toBe("boolean");
+      expect(tool!.annotations!.openWorldHint).toBe(false);
     }
   });
 
-  it("exposes descriptions and input schemas for every tool", () => {
+  it("marks analysis as read-only and mutation tools as destructive", () => {
     const server = createServer() as unknown as { _registeredTools: Record<string, RegisteredToolLike> };
-    for (const [name, tool] of Object.entries(server._registeredTools)) {
-      expect(tool, `tool ${name}`).toBeTruthy();
-      expect(tool.description).toBeTruthy();
-      expect(tool.inputSchema).toBeDefined();
-      expect(typeof tool.inputSchema).toBe("object");
+    expect(server._registeredTools.analyze_injection_surface!.annotations).toMatchObject({
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+    });
+    for (const name of EXPECTED_CORE_TOOLS.filter((tool) => tool !== "analyze_injection_surface")) {
+      expect(server._registeredTools[name]!.annotations).toMatchObject({
+        readOnlyHint: false,
+        destructiveHint: true,
+      });
     }
   });
 
@@ -60,16 +88,10 @@ describe("server", () => {
       >;
     };
     const promptNames = Object.keys(server._registeredPrompts);
-    expect(promptNames).toContain("scan");
-    expect(promptNames).toContain("decompile");
-    expect(promptNames).toContain("inject");
-    expect(promptNames).toContain("patch");
-    expect(promptNames).toContain("recompile");
-    expect(promptNames).toContain("pipeline");
-    expect(promptNames).toContain("memory");
-    expect(promptNames).toContain("hermes_guide");
+    for (const prompt of ["scan", "decompile", "inject", "patch", "recompile", "pipeline", "merge", "revert", "memory", "hermes_guide"]) {
+      expect(promptNames).toContain(prompt);
+    }
 
-    // Verify zero-argument invocation works without throwing
     for (const name of promptNames) {
       const promptObj = server._registeredPrompts[name];
       expect(promptObj).toBeTruthy();

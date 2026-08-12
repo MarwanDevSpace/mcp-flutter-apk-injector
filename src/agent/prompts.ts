@@ -212,6 +212,57 @@ All intermediate steps must update session memory graph automatically.`,
     }
   );
 
+  // /merge Prompt
+  server.registerPrompt(
+    "merge",
+    {
+      title: "merge",
+      description: "Plan and validate split-package compatibility without blindly merging APK directories",
+    },
+    async (extra) => {
+      const args = (extra as { params?: { arguments?: Record<string, string> } })?.params?.arguments ?? {};
+      const memory = SessionMemoryManager.getInstance().getState();
+      const base = args["baseWorkspaceDir"] ?? memory.workspaceDir ?? "the decoded base APK workspace";
+      const splits = args["splitSourceDir"] ?? "the extracted split/APKS source directory";
+      return {
+        messages: [
+          {
+            role: "user",
+            content: {
+              type: "text",
+              text: `🔀 [${HERMES_PERSONA_NAME} /merge Planning Triggered]\nInspect base workspace "${base}" and split source "${splits}" without copying files yet. Establish package, version, signer, ABI, density/language, feature-module, and manifest dependency compatibility. Report a validated install-set plan, unresolved dependencies, and only then propose an authorized bundle-aware output path. Do not claim an arbitrary split APK set can be converted into a standalone APK by directory merging.`,
+            },
+          },
+        ],
+      };
+    },
+  );
+
+  // /revert Prompt
+  server.registerPrompt(
+    "revert",
+    {
+      title: "revert",
+      description: "Inspect patch history and determine whether verified rollback evidence exists",
+    },
+    async (extra) => {
+      const args = (extra as { params?: { arguments?: Record<string, string> } })?.params?.arguments ?? {};
+      const memory = SessionMemoryManager.getInstance().getState();
+      const patchId = args["patchId"] ?? "the requested patch record";
+      return {
+        messages: [
+          {
+            role: "user",
+            content: {
+              type: "text",
+              text: `↩️ [${HERMES_PERSONA_NAME} /revert Planning Triggered]\nInspect ${patchId} against the recorded patch history below. Confirm workspace identity, affected files, hashes, and the existence of original-file backups before proposing any restoration. If verified backups are absent, report that rollback cannot be guaranteed and provide a safe recovery plan instead.\n\nPatch history:\n\n\`\`\`json\n${JSON.stringify(memory.patchHistory, null, 2)}\n\`\`\``,
+            },
+          },
+        ],
+      };
+    },
+  );
+
   // /memory Prompt
   server.registerPrompt(
     "memory",

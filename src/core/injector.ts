@@ -22,6 +22,10 @@ export interface InjectFlutterOptions {
   injectionMode: InjectionMode;
   methodChannel?: MethodChannelBridgeConfig;
   engineId?: string;
+  /** Also initialize from an existing Application.attachBaseContext when available. */
+  attachBaseContextHook?: boolean;
+  /** Return from generated initialization instead of crashing when native libraries are unavailable. */
+  nativeLibraryFallback?: boolean;
 }
 
 export async function injectFlutterRuntimeAndSmali(
@@ -56,6 +60,7 @@ export async function injectFlutterRuntimeAndSmali(
     applicationSuperClass: applicationSuper,
     injectionModes: [opts.injectionMode],
     channel: opts.methodChannel,
+    nativeLibraryFallback: opts.nativeLibraryFallback,
   });
 
   const modifiedFiles: InjectedFilePatch[] = generation.classes.map((c) => ({
@@ -119,7 +124,7 @@ export async function injectFlutterRuntimeAndSmali(
       );
     }
   } else if (opts.injectionMode === "direct_application_hook") {
-    const { injectApplicationHook } = await import("../smali/transformer.js");
+    const { injectApplicationHook, injectAttachBaseContextHook } = await import("../smali/transformer.js");
     if (surface.applicationClassPath) {
       const patch = await injectApplicationHook(surface.applicationClassPath, generation.bootstrapDescriptor);
       modifiedFiles.push({
@@ -128,6 +133,22 @@ export async function injectFlutterRuntimeAndSmali(
         description: `Injected Flutter engine init into Application onCreate (${patch.method})`,
         verified: validateSmaliStructure(patch.filePath).ok,
       });
+
+      if (opts.attachBaseContextHook) {
+        try {
+          const attachPatch = await injectAttachBaseContextHook(surface.applicationClassPath, generation.bootstrapDescriptor);
+          modifiedFiles.push({
+            filePath: path.relative(workspaceDir, attachPatch.filePath).split(path.sep).join("/"),
+            patchType: "smali_insert",
+            description: `Injected Flutter engine fallback init into Application attachBaseContext (${attachPatch.method})`,
+            verified: validateSmaliStructure(attachPatch.filePath).ok,
+          });
+        } catch (err) {
+          surface.warnings.push(
+            `attachBaseContext hook was requested but not applied: ${(err as Error).message}`,
+          );
+        }
+      }
     } else {
       surface.warnings.push(
         "No decompiled Application class found to hook directly; generated standalone InjectedApplication.",
@@ -150,6 +171,12 @@ export async function injectFlutterRuntimeAndSmali(
   }
   if (deployed.copiedLibs.length === 0) {
     warnings.push("No native libraries deployed; the Flutter engine will not start.");
+  }
+  if (opts.attachBaseContextHook && opts.injectionMode !== "direct_application_hook") {
+    warnings.push("attachBaseContextHook applies only to direct_application_hook and was not used for this mode.");
+  }
+  if (opts.nativeLibraryFallback) {
+    warnings.push("Native-library fallback is enabled; generated initialization returns without starting an engine when Flutter libraries cannot load.");
   }
 
   return {
