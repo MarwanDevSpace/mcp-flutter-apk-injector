@@ -29,6 +29,27 @@ export const DecompileApkOutputSchema = {
   smaliRoot: z.string().nullable().describe("Primary Smali root, when source decoding was enabled."),
 };
 
+export const SecurityAnalysisOutputSchema = z.object({
+  rootDetection: z.array(z.string()).describe("Detected root and integrity check markers in bytecode."),
+  antiDebug: z.array(z.string()).describe("Detected anti-debugging checks (e.g. Debug.isDebuggerConnected)."),
+  emulatorDetection: z.array(z.string()).describe("Detected emulator environment markers."),
+  sslPinning: z.array(z.string()).describe("Detected SSL pinning or custom TrustManager markers."),
+  obfuscator: z.string().nullable().describe("Detected obfuscator or native packer fingerprint."),
+});
+
+export const ManifestSecurityOutputSchema = z.object({
+  debuggable: z.boolean().describe("Whether android:debuggable is enabled."),
+  allowBackup: z.boolean().describe("Whether android:allowBackup is enabled."),
+  usesCleartextTraffic: z.boolean().describe("Whether android:usesCleartextTraffic is permitted."),
+  exportedComponentsCount: z.number().int().nonnegative().describe("Count of exported activities/components without permission barriers."),
+  dangerousPermissions: z.array(z.string()).describe("Declared dangerous Android permissions."),
+});
+
+export const MultiDexOutputSchema = z.object({
+  isMultiDex: z.boolean().describe("Whether the workspace contains multiple Smali root classes."),
+  smaliRoots: z.array(z.string()).describe("List of detected Smali root directory names."),
+});
+
 export const AnalyzeSurfaceOutputSchema = {
   workspaceDir: z.string().describe("Analyzed decoded APK workspace."),
   packageName: z.string().describe("Manifest package identity."),
@@ -44,6 +65,10 @@ export const AnalyzeSurfaceOutputSchema = {
   existingFlutter: z.boolean().describe("Whether Flutter embedding classes were detected."),
   existingFlutterClasses: z.array(z.string()).describe("Detected existing Flutter class paths."),
   existingNativeAbis: z.array(z.string()).describe("Native ABI directories detected in the target."),
+  nativeLibraries: z.record(z.array(z.string())).describe("Detected native .so libraries grouped by ABI architecture."),
+  securityAnalysis: SecurityAnalysisOutputSchema.describe("Deep bytecode security audit (root, anti-debug, emulator, ssl pinning, obfuscator)."),
+  manifestSecurity: ManifestSecurityOutputSchema.describe("Manifest security configuration and attack surface audit."),
+  multiDex: MultiDexOutputSchema.describe("Multi-DEX architecture and Smali root layout analysis."),
   jniLoadingHooks: z.array(z.string()).describe("Evidence strings for detected JNI library loading calls."),
   assetScripts: z.array(z.string()).describe("Candidate script-like asset paths."),
   luaMods: z.array(z.string()).describe("Detected Lua asset paths."),
@@ -100,6 +125,34 @@ export const RecompileSignOutputSchema = {
   aligned: z.boolean().describe("Whether zipalign completed successfully."),
   verified: z.boolean().describe("Whether apksigner verification completed successfully."),
   sizeBytes: z.number().int().nonnegative().describe("Final APK byte size."),
+};
+
+export const GetAgentContextOutputSchema = {
+  persona: z.object({
+    name: z.string().describe("Agent persona name."),
+    title: z.string().describe("Agent persona professional title."),
+    operationalRules: z.array(z.string()).describe("System and reverse engineering operational rules."),
+  }).describe("Hermes+ identity and engineering principles."),
+  skills: z.array(z.object({
+    name: z.string().describe("Loaded skill identifier."),
+    description: z.string().describe("Loaded skill operational capability description."),
+  })).describe("Available agent skill sheets."),
+  sessionMemory: z.record(z.unknown()).describe("Active session memory snapshot including target metadata, patch logs, and telemetry."),
+};
+
+export const UpdateAgentMemoryOutputSchema = {
+  status: z.enum(["success", "error"]).describe("Status of the memory state update operation."),
+  updatedMemory: z.record(z.unknown()).describe("Complete updated session memory state after applying modifications and persisting to disk."),
+};
+
+export const QueryMemoryGraphOutputSchema = {
+  query: z.string().describe("Original query search string."),
+  matchesCount: z.number().int().nonnegative().describe("Total number of matching memory graph nodes found."),
+  results: z.array(z.object({
+    category: z.string().describe("Memory graph node category (e.g. Package Name, Patch, Agent Note)."),
+    value: z.string().describe("Matched node string value or patch detail."),
+    matchScore: z.number().describe("Relevance match score (higher indicates more specific match)."),
+  })).describe("Ranked list of matching memory graph elements."),
 };
 
 export type OutputShape = Record<string, z.ZodTypeAny>;

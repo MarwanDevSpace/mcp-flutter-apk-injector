@@ -16,6 +16,7 @@ export interface ManifestApplication {
   icon?: string;
   allowBackup?: boolean;
   usesCleartextTraffic?: boolean;
+  debuggable?: boolean;
 }
 
 export interface ParsedManifest {
@@ -119,6 +120,7 @@ export function parseManifestXml(xml: string): ParsedManifest {
       icon: appNode?.["@_icon"],
       allowBackup: (appNode?.["@_allowBackup"] ?? "true") === "true",
       usesCleartextTraffic: (appNode?.["@_usesCleartextTraffic"] ?? "false") === "true",
+      debuggable: (appNode?.["@_debuggable"] ?? "false") === "true",
     },
     activities,
     providers: toArray(appNode?.["provider"]).map((p: Record<string, any>) => p?.["@_name"] ?? ""),

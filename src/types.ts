@@ -32,6 +32,27 @@ export interface DecompileResult {
   smaliRoot: string | null;
 }
 
+export interface SecurityAnalysis {
+  rootDetection: string[];
+  antiDebug: string[];
+  emulatorDetection: string[];
+  sslPinning: string[];
+  obfuscator: string | null;
+}
+
+export interface ManifestSecurity {
+  debuggable: boolean;
+  allowBackup: boolean;
+  usesCleartextTraffic: boolean;
+  exportedComponentsCount: number;
+  dangerousPermissions: string[];
+}
+
+export interface MultiDexInfo {
+  isMultiDex: boolean;
+  smaliRoots: string[];
+}
+
 export interface InjectionSurface {
   workspaceDir: string;
   packageName: string;
@@ -47,6 +68,10 @@ export interface InjectionSurface {
   existingFlutter: boolean;
   existingFlutterClasses: string[];
   existingNativeAbis: string[];
+  nativeLibraries: Record<string, string[]>;
+  securityAnalysis: SecurityAnalysis;
+  manifestSecurity: ManifestSecurity;
+  multiDex: MultiDexInfo;
   jniLoadingHooks: string[];
   assetScripts: string[];
   luaMods: string[];

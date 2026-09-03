@@ -41,9 +41,10 @@ describe("server", () => {
     for (const expected of EXPECTED_AGENT_TOOLS) expect(names).toContain(expected);
   });
 
-  it("exposes complete, agent-usable contracts for every primary pipeline tool", () => {
+  it("exposes complete, agent-usable contracts for every tool (all 9 tools)", () => {
     const server = createServer() as unknown as { _registeredTools: Record<string, RegisteredToolLike> };
-    for (const name of EXPECTED_CORE_TOOLS) {
+    const allTools = [...EXPECTED_CORE_TOOLS, ...EXPECTED_AGENT_TOOLS];
+    for (const name of allTools) {
       const tool = server._registeredTools[name];
       expect(tool, `tool ${name}`).toBeTruthy();
       expect(tool!.description).toBeTruthy();
@@ -61,15 +62,28 @@ describe("server", () => {
     }
   });
 
-  it("marks analysis as read-only and mutation tools as destructive", () => {
+  it("marks read-only tools and mutation tools accurately across all 9 tools", () => {
     const server = createServer() as unknown as { _registeredTools: Record<string, RegisteredToolLike> };
-    expect(server._registeredTools.analyze_injection_surface!.annotations).toMatchObject({
-      readOnlyHint: true,
-      destructiveHint: false,
-      idempotentHint: true,
-    });
-    for (const name of EXPECTED_CORE_TOOLS.filter((tool) => tool !== "analyze_injection_surface")) {
-      expect(server._registeredTools[name]!.annotations).toMatchObject({
+    const readOnlyTools = ["analyze_injection_surface", "get_agent_context", "query_memory_graph"];
+    const mutatingTools = [
+      "decompile_apk",
+      "synthesize_flutter_payload",
+      "inject_flutter_runtime_and_smali",
+      "patch_manifest_and_config",
+      "recompile_align_and_sign",
+      "update_agent_memory",
+    ];
+
+    for (const name of readOnlyTools) {
+      expect(server._registeredTools[name]!.annotations, `tool ${name} annotations`).toMatchObject({
+        readOnlyHint: true,
+        destructiveHint: false,
+        idempotentHint: true,
+      });
+    }
+
+    for (const name of mutatingTools) {
+      expect(server._registeredTools[name]!.annotations, `tool ${name} annotations`).toMatchObject({
         readOnlyHint: false,
         destructiveHint: true,
       });

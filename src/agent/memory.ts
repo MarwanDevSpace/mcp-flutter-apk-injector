@@ -7,6 +7,9 @@ import type {
   InjectionReport,
   ManifestPatchResult,
   SigningResult,
+  SecurityAnalysis,
+  ManifestSecurity,
+  MultiDexInfo,
 } from "../types.js";
 import { logger } from "../core/logger.js";
 
@@ -31,6 +34,10 @@ export interface SessionMemoryState {
   targetAbis: string[];
   hasNativeLibs: boolean;
   existingFlutter: boolean;
+  nativeLibraries: Record<string, string[]>;
+  securityAnalysis: SecurityAnalysis | null;
+  manifestSecurity: ManifestSecurity | null;
+  multiDex: MultiDexInfo | null;
   jniHooks: string[];
   luaMods: string[];
   smaliRegisterBounds: Record<string, number>;
@@ -62,6 +69,10 @@ export class SessionMemoryManager {
       targetAbis: [],
       hasNativeLibs: false,
       existingFlutter: false,
+      nativeLibraries: {},
+      securityAnalysis: null,
+      manifestSecurity: null,
+      multiDex: null,
       jniHooks: [],
       luaMods: [],
       smaliRegisterBounds: {},
@@ -121,6 +132,10 @@ export class SessionMemoryManager {
     this.state.existingFlutter = surface.existingFlutter;
     this.state.jniHooks = surface.jniLoadingHooks;
     this.state.luaMods = surface.luaMods;
+    if (surface.nativeLibraries) this.state.nativeLibraries = surface.nativeLibraries;
+    if (surface.securityAnalysis) this.state.securityAnalysis = surface.securityAnalysis;
+    if (surface.manifestSecurity) this.state.manifestSecurity = surface.manifestSecurity;
+    if (surface.multiDex) this.state.multiDex = surface.multiDex;
     if (surface.entryActivities.length > 0) {
       const launcher = surface.entryActivities.find((a) => a.launcher);
       if (launcher) {
@@ -219,6 +234,56 @@ export class SessionMemoryManager {
       }
     }
 
+    if (this.state.securityAnalysis) {
+      const sec = this.state.securityAnalysis;
+      searchField("Security (Obfuscator)", sec.obfuscator);
+      for (const item of sec.antiDebug) {
+        searchField("Security (Anti-Debug)", item);
+      }
+      for (const item of sec.rootDetection) {
+        searchField("Security (Root Detection)", item);
+      }
+      for (const item of sec.sslPinning) {
+        searchField("Security (SSL Pinning)", item);
+      }
+      for (const item of sec.emulatorDetection) {
+        searchField("Security (Emulator Detection)", item);
+      }
+    }
+
+    if (this.state.nativeLibraries) {
+      for (const [abi, libs] of Object.entries(this.state.nativeLibraries)) {
+        for (const lib of libs) {
+          if (lib.toLowerCase().includes(q) || abi.toLowerCase().includes(q)) {
+            results.push({
+              category: `Native Library (${abi})`,
+              value: lib,
+              matchScore: lib.toLowerCase() === q ? 95 : 45,
+            });
+          }
+        }
+      }
+    }
+
+    if (this.state.multiDex) {
+      if (this.state.multiDex.isMultiDex && "multidex".includes(q)) {
+        results.push({
+          category: "Architecture",
+          value: `Multi-DEX enabled (${this.state.multiDex.smaliRoots.join(", ")})`,
+          matchScore: 60,
+        });
+      }
+      for (const root of this.state.multiDex.smaliRoots) {
+        if (root.toLowerCase().includes(q)) {
+          results.push({
+            category: "Smali Root",
+            value: root,
+            matchScore: 50,
+          });
+        }
+      }
+    }
+
     return results.sort((a, b) => b.matchScore - a.matchScore);
   }
 
@@ -272,6 +337,10 @@ export class SessionMemoryManager {
       targetAbis: [],
       hasNativeLibs: false,
       existingFlutter: false,
+      nativeLibraries: {},
+      securityAnalysis: null,
+      manifestSecurity: null,
+      multiDex: null,
       jniHooks: [],
       luaMods: [],
       smaliRegisterBounds: {},

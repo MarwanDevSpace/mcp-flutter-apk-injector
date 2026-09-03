@@ -1,3 +1,5 @@
+import fs from "node:fs";
+import { writeFile } from "node:fs/promises";
 import path from "node:path";
 import { assertDirExists, readText } from "./fileUtils.js";
 import { analyzeInjectionSurface, findSmaliRoot } from "../decompiler/analyzer.js";
@@ -6,6 +8,7 @@ import { generateSmaliClasses } from "../smali/generator.js";
 import { injectActivityHook, validateSmaliStructure } from "../smali/transformer.js";
 import { deployPayloadIntoWorkspace } from "../payload/deploy.js";
 import { patchManifest } from "../manifest/patcher.js";
+import { generateWorkspaceAgentsMd } from "../agent/persona.js";
 import { logger } from "./logger.js";
 import type {
   InjectionMode,
@@ -177,6 +180,17 @@ export async function injectFlutterRuntimeAndSmali(
   }
   if (opts.nativeLibraryFallback) {
     warnings.push("Native-library fallback is enabled; generated initialization returns without starting an engine when Flutter libraries cannot load.");
+  }
+
+  // Auto-install AGENTS.md in the application workspace if missing
+  try {
+    const agentsMdPath = path.join(workspaceDir, "AGENTS.md");
+    if (!fs.existsSync(agentsMdPath)) {
+      await writeFile(agentsMdPath, generateWorkspaceAgentsMd(packageName), "utf8");
+      logger.info("Auto-installed AGENTS.md into application workspace", { path: agentsMdPath });
+    }
+  } catch (err) {
+    logger.warn("Could not write AGENTS.md to application workspace", { error: String(err) });
   }
 
   return {

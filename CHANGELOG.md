@@ -2,6 +2,43 @@
 
 All notable changes to `mcp-flutter-apk-injector` are documented in this file.
 
+## [0.7.1] — 2026-09-03
+
+### Added
+
+- Master `HERMES.md` persona specification unifying character identity, autonomous tool calling, Dalvik/ART register frame math, and anti-tamper heuristics.
+- Autonomous application workspace contract auto-installation: `decompile_apk` and `inject_flutter_runtime_and_smali` automatically verify and install `AGENTS.md` directly into any target application directory.
+- Universal, cross-IDE `AGENTS.md` contract synchronized between repository root and `.agents/AGENTS.md`.
+- Workspace contract generator `generateWorkspaceAgentsMd` in `src/agent/persona.ts`.
+
+### Removed
+
+- Removed obsolete client-fragment files (`GEMINI.md`, `CLAUDE.md`, `.cursor` directory, `RESEARCH_LOG.md`) in favor of the unified `HERMES.md` and `AGENTS.md` contracts.
+- Cleaned up `package.json` package bundle files list and npm artifact distribution.
+
+### Changed
+
+- Updated `README.md` into an organized, clean, modern, high-clarity reference manual.
+- Bumped version to `0.7.1`.
+
+## [0.7.0] — 2026-09-03
+
+### Added
+
+- Deep static security analysis in `analyze_injection_surface`: anti-debug detection (`Debug.isDebuggerConnected`, `TracerPid`), root checks (`RootBeer`, `su` binary execution, `test-keys`, `Magisk`), SSL pinning (`CertificatePinner`, custom `TrustManager`), and native packer fingerprinting (`Tencent Legu`, `Qihoo 360`, `Bangcle/SecNeo`, `Ijiami`, `DexGuard`, `ProGuard/R8`).
+- Native library mapping across target ABI architectures (`arm64-v8a`, `armeabi-v7a`, `x86`, `x86_64`) with per-architecture `.so` file enumeration.
+- Manifest security and vulnerability auditing (`debuggable`, `allowBackup`, `usesCleartextTraffic`, exported components count, and dangerous Android permissions).
+- Multi-DEX architecture recognition and root Smali tracking (`smali`, `smali_classes2`, `smali_classes3`, etc.).
+- Complete typed output schemas, behavioral annotations, and dual structured responses for all 3 agent tools (`get_agent_context`, `update_agent_memory`, `query_memory_graph`).
+- Enriched `query_memory_graph` search engine indexing security findings, native libraries, multi-DEX roots, patch history, and agent notes.
+- Glama 5.0/5.0 quality optimization across all 9 MCP tools covering Behavior, Conciseness, Completeness, Parameters, Purpose, and Usage Guidelines.
+
+### Changed
+
+- Updated tool contracts, schemas, and descriptions for all 9 MCP tools to achieve full protocol parity.
+- Synchronized `GEMINI.md` and `.agents/AGENTS.md` canonical contracts.
+- Updated package version and server runtime default to `0.7.0`.
+
 ## [0.6.0] — 2026-08-12
 
 ### Added

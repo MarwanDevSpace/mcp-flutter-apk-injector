@@ -8,11 +8,11 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-badge)](https://opensource.org/licenses/MIT)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D18.0.0-green.svg?style=flat-badge&logo=nodedotjs)](https://nodejs.org/)
 [![Model Context Protocol](https://img.shields.io/badge/MCP-1.30.0-purple.svg?style=flat-badge)](https://modelcontextprotocol.io)
-[![Hermes+ Engine](https://img.shields.io/badge/Agent-Hermes%2B_Memory_Engine-red?style=flat-badge&logo=openai)](https://github.com/MarwanDevSpace/mcp-flutter-apk-injector)
+[![Hermes+ Engine](https://img.shields.io/badge/Agent-Hermes%2B_Universal_Engine-red?style=flat-badge&logo=openai)](https://github.com/MarwanDevSpace/mcp-flutter-apk-injector)
 [![GitHub Repository](https://img.shields.io/badge/GitHub-MarwanDevSpace-black?style=flat-badge&logo=github)](https://github.com/MarwanDevSpace/mcp-flutter-apk-injector)
 [![mcp-flutter-apk-injector MCP server](https://glama.ai/mcp/servers/MarwanDevSpace/mcp-flutter-apk-injector/badges/score.svg)](https://glama.ai/mcp/servers/MarwanDevSpace/mcp-flutter-apk-injector)
 
-**The World's Most Advanced Memory-Aware Model Context Protocol (MCP) Server for Android APK Reverse Engineering, Dalvik/Smali Bytecode Refactoring, Native JNI Tracing, and Flutter Runtime Overlay Injection.**
+**The Premier Memory-Aware Model Context Protocol (MCP) Server for Android APK Reverse Engineering, Smali Frame Refactoring, Native JNI Tracing, and Flutter Runtime Overlay Injection.**
 
 [ 🇬🇧 **English Documentation** ](#-english-documentation) &nbsp; | &nbsp; [ 🇸🇦 **التوثيق باللغة العربية** ](#-التوثيق-باللغة-العربية)
 
@@ -24,9 +24,9 @@
 
 ### 🌟 Executive Overview & Key Advantages
 
-`mcp-flutter-apk-injector` is a highly developed, enterprise-grade Model Context Protocol (MCP) Server designed for security researchers, reverse engineers, and mobile penetration testers. It seamlessly combines **automated static/dynamic Android binary analysis**, **Dalvik/ART Smali stack frame balance refactoring**, **native `.so` library symbol tracing**, and **Flutter Add-to-App v2 runtime injection**.
+`mcp-flutter-apk-injector` (v0.7.1) is an enterprise-grade Model Context Protocol (MCP) Server designed for security researchers, reverse engineers, and mobile penetration testers. It seamlessly combines **automated static/dynamic Android binary analysis**, **Dalvik/ART Smali stack frame balance refactoring**, **native `.so` library symbol tracing**, and **Flutter Add-to-App v2 runtime injection**.
 
-Powered by **Hermes+ (Universal Main Character)**, this server provides persistent session telemetry, searchable patch history, MCP resources, and zero-argument resilient prompt handlers. Version 0.6.0 adds typed output schemas, behavioral annotations, structured responses, and a mandatory cross-client character contract for evidence-first workflow guidance.
+Powered by **Hermes+ (Universal Main Character)**, this server provides persistent session telemetry, searchable patch history, native MCP resources, and resilient zero-argument prompt handlers. Version 0.7.1 introduces unified character contracts ([`HERMES.md`](HERMES.md) & [`AGENTS.md`](AGENTS.md)), automated workspace contract installation across decompiled targets, deep security auditing (anti-debugging, root checks, SSL pinning, native packers), and achieves **5.0/5.0 Tier A+** across all 9 MCP tools according to Glama standards.
 
 ```
                           ┌─────────────────────────────────────────┐
@@ -36,11 +36,11 @@ Powered by **Hermes+ (Universal Main Character)**, this server provides persiste
                                                │
                                                ▼
   ┌────────────────────────────────────────────────────────────────────────────────────────┐
-  │                           mcp-flutter-apk-injector (v0.6.0)                            │
+  │                           mcp-flutter-apk-injector (v0.7.1)                            │
   │                                                                                        │
   │  ┌────────────────────────┐  ┌─────────────────────────┐  ┌─────────────────────────┐  │
-  │  │  Hermes+ Agent Engine  │  │ Session Memory Manager  │  │ Embedded Skills & Prompts│  │
-  │  │ (Persona & Rules Graph)│  │ (.mcp_memory/session)   │  │ (/scan, /decompile, ...)│  │
+  │  │  Hermes+ Master Engine │  │ Session Memory Manager  │  │ Embedded Skills & Prompts│  │
+  │  │ (HERMES.md / AGENTS.md)│  │ (.mcp_memory/session)   │  │ (/scan, /decompile, ...)│  │
   │  └───────────┬────────────┘  └────────────┬────────────┘  └────────────┬────────────┘  │
   └──────────────┼────────────────────────────┼────────────────────────────┼───────────────┘
                  │                            │                            │
@@ -50,129 +50,118 @@ Powered by **Hermes+ (Universal Main Character)**, this server provides persiste
   │                                                                                        │
   │  [decompile_apk] ──► [analyze_surface] ──► [synthesize_payload] ──► [inject_flutter]  │
   │  [patch_manifest] ──► [recompile_align_sign] ──► [get_context] ──► [update_memory]    │
+  │                             [query_memory_graph]                                       │
   └────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-### 🧠 Hermes+ (Universal Main Character) & MCP Skill Ecosystem
+### 🧠 Hermes+ Universal Character & Contracts
 
-#### 1. Embedded Persona: `Hermes+ (Universal Main Character)`
-Hermes+ (Universal Main Character) is the required primary repository persona for Gemini, Antigravity, Cursor, Claude Code, and compatible MCP clients. It is specialized in ARM/ARM64 binary inspection, JNI method hooks, Dalvik register-stack allocation (`v0`-`vN`, `p0`-`pN`), and Flutter-aware Android workspace engineering. It observes before mutation, exposes uncertainty, preserves execution integrity, and verifies outputs before reporting completion.
+#### 1. Universal Specification: [`HERMES.md`](HERMES.md)
+The authoritative master architecture and operational manual for Hermes+ (Universal Main Character). It defines Dalvik/ART Smali register frame calculus (`.locals + params = .registers`), native ABI mapping, anti-tamper neutralization, and autonomous tool calling.
 
-#### 2. Native MCP Skills (`.agents/skills/`)
-* 🧠 **`hermes-apk-reverse-engineering`**: Guides static/dynamic DEX bytecode refactoring, register frame bumping (`.registers N`), native `.so` library deployment, and zero-crash UI overlay injection.
-* ⚡ **`mcp-toolchain-orchestrator`**: Manages MCP server quality assurance, zero-argument prompt resiliency, automated testing, and distribution workflows.
+#### 2. Universal Agent Contract: [`AGENTS.md`](AGENTS.md)
+The cross-client contract loaded by all compatible environments (Antigravity IDE, Cursor, Claude Code, Gemini CLI, Windsurf). Synchronized with `.agents/AGENTS.md`.
+
+#### 3. Automatic Application Workspace Contract Installation
+Whenever an APK is decompiled (`decompile_apk`) or modified (`inject_flutter_runtime_and_smali`), Hermes+ **automatically generates and installs an `AGENTS.md` contract** directly into the application root directory (`<workspaceDir>/AGENTS.md`). Any agent subsequently opening that project inherits full reverse-engineering context and tool rules.
+
+#### 4. Native MCP Skills (`.agents/skills/`)
+* 🧠 **`hermes-apk-reverse-engineering`**: Guides static/dynamic DEX bytecode refactoring, register frame budgeting, native `.so` library deployment, and zero-crash UI overlay injection.
+* ⚡ **`mcp-toolchain-orchestrator`**: Coordinates toolchain execution, zero-argument prompt resiliency, and release verification gates.
 
 #### 📡 Native MCP Resources
-- `resource://agent/persona`: Hermes+ identity, system prompt, and core reverse engineering rules.
+- `resource://agent/persona`: Hermes+ identity, prompt, and core reverse engineering rules.
 - `resource://agent/rules`: 5-step deep reverse engineering protocol.
-- `resource://agent/skills/hermes-apk-reverse-engineering`: Reverse engineering skill document.
-- `resource://agent/skills/mcp-toolchain-orchestrator`: Toolchain orchestrator skill document.
+- `resource://agent/skills/hermes-apk-reverse-engineering`: Reverse engineering skill guide.
+- `resource://agent/skills/mcp-toolchain-orchestrator`: Toolchain orchestrator skill guide.
 - `resource://memory/session`: Live JSON session memory graph state.
 - `resource://memory/patch_history`: Audit log of applied Smali and Manifest patches.
 
 ---
 
-### ⚙️ 5-Step Deep Reverse Engineering Pipeline
+### ⚙️ 5-Step Reverse Engineering Pipeline
 
 ```
                        [Target Android .apk / Workspace]
                                        │
                                        ▼
  ┌───────────────────────────────────────────────────────────────────────────┐
- │ STEP 1: Binary & Asset Deconstruction (decompile_apk)                     │
- │ Extract DEX Smali bytecode, native lib/*.so trees, AXML, assets/          │
+ │ STEP 1: Binary & Workspace Deconstruction (decompile_apk)                 │
+ │ Extract Smali, native lib/*.so trees, AXML; auto-install AGENTS.md        │
  └─────────────────────────────────────┬─────────────────────────────────────┘
                                        │
                                        ▼
  ┌───────────────────────────────────────────────────────────────────────────┐
- │ STEP 2: Precision Native & Smali Tracing (analyze_injection_surface)      │
- │ Trace UI click handlers (View$OnClickListener), 0x7f... R-ids,            │
- │ JNI native symbols, and Lua script hook points                            │
+ │ STEP 2: Deep Security & Surface Audit (analyze_injection_surface)         │
+ │ Audit anti-debugging, root checks, SSL pinning, packers, ABIs, multi-DEX  │
  └─────────────────────────────────────┬─────────────────────────────────────┘
                                        │
                                        ▼
  ┌───────────────────────────────────────────────────────────────────────────┐
- │ STEP 3: Seamless Payload Injection (inject_flutter_runtime_and_smali)     │
- │ Synthesize Flutter engine payload; balance register stack frames          │
- │ (.registers N); inject native-looking UI without crashes                  │
+ │ STEP 3: Payload Synthesis & Injection (inject_flutter_runtime_and_smali)  │
+ │ Compile Flutter engine; balance register stack frames; inject UI overlay  │
  └─────────────────────────────────────┬─────────────────────────────────────┘
                                        │
                                        ▼
  ┌───────────────────────────────────────────────────────────────────────────┐
- │ STEP 4: Manifest Surgery & Assembly (patch_manifest & recompile_align)    │
- │ Patch AndroidManifest.xml (permissions, Application override, ABIs);      │
- │ Rebuild (apktool b), 4-byte Align (zipalign), Sign (apksigner)            │
+ │ STEP 4: Manifest Configuration & Rebuild (patch_manifest & recompile)     │
+ │ Patch AndroidManifest.xml; rebuild (apktool b), zipalign, apksigner sign  │
  └─────────────────────────────────────┬─────────────────────────────────────┘
                                        │
                                        ▼
  ┌───────────────────────────────────────────────────────────────────────────┐
- │ STEP 5: Architectural Summary & Session Memory Persistence                │
- │ Document modified Smali paths, .so symbol offsets, injected channels,     │
- │ register maps, and verified output APK location                           │
+ │ STEP 5: Architectural Telemetry & Session Graph (Session Memory)          │
+ │ Query memory graph; record verified patches and output verification       │
  └───────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-### 🛠️ The 9 Enterprise MCP Tools
+### 🛠️ The 9 Enterprise MCP Tools (Glama 5.0/5.0 Tier A+)
 
-| Tool Name | Detailed Function & Output |
-| --- | --- |
-| `decompile_apk` | Disassemble target APK into Smali bytecode, native libraries (`lib/`), resources (`res/`), and decoded `AndroidManifest.xml`. Updates memory graph automatically. |
-| `analyze_injection_surface` | Scan decompiled APK workspace to identify optimal injection hooks, entry Activity, Application class, JNI loading hooks, native ABIs, and recommended patch points. |
-| `synthesize_flutter_payload` | Extract Flutter runtime artifacts (`libflutter.so`, `libapp.so`, `flutter_assets`, ICU data) ready to merge into decompiled APK workspace. |
-| `inject_flutter_runtime_and_smali` | Inject Flutter assets, native `.so` libraries, and Smali glue code (`InjectedApplication`, `FlutterOverlayActivity`, or `MethodChannel` bridge) preserving Dalvik stack register bounds. |
-| `patch_manifest_and_config` | Patch `AndroidManifest.xml` with permissions (`INTERNET`, `WAKE_LOCK`), Application class configuration, cleartext traffic allowance, and activity registrations. |
-| `recompile_align_and_sign` | Rebuild workspace with `apktool`, align and verify with `zipalign`, then sign and verify with `apksigner`. Outputs are explicitly classified as test/debug or signing-context-dependent artifacts. |
-| `get_agent_context` | Retrieve Hermes+ persona, loaded skills, live memory summary, and pipeline telemetry. |
-| `update_agent_memory` | Explicitly update active session memory state with notes, identified targets, or patch logs. |
-| `query_memory_graph` | Search and inspect historical patch logs, register allocations, and decompilation metadata. |
-
----
-
-### 🎮 The 4 Dynamic Injection Modes
-
-| Injection Strategy | Primary Smali Target | Description |
-| --- | --- | --- |
-| **`activity_overlay`** | `FlutterOverlayActivity` | Launches a dedicated Flutter Activity reusing a pre-warmed cached engine for custom UI overlays inside apps or mobile games. |
-| **`view_tree_injection`** | Launcher Activity `onCreate()` | **Experimental:** attaches `FlutterView` to a target Activity only when a lifecycle-compatible host adapter has been verified. |
-| **`headless_engine`** | `BackgroundFlutterEngine` | Initializes a background engine without UI for headless Dart execution, channel routing, and telemetry. |
-| **`direct_application_hook`** | `Application.onCreate()` / `attachBaseContext()` | Directly instruments existing Application class in Smali without modifying `android:name` in `AndroidManifest.xml`. |
+| Tool Name | Type | Annotations | Operational Role |
+|---|---|---|---|
+| `decompile_apk` | Core | `destructive: true` | Decodes APK into Smali, resources, assets, and manifest; **auto-installs `AGENTS.md` into workspace**. |
+| `analyze_injection_surface` | Core | `readOnly: true, idempotent: true` | Static audit: scans components, native `.so` libraries, anti-debugging, root checks, SSL pinning, packers, and multi-DEX. |
+| `synthesize_flutter_payload` | Core | `destructive: true` | Compiles Flutter project into platform native libraries (`libflutter.so`, `libapp.so`) and assets. |
+| `inject_flutter_runtime_and_smali` | Core | `destructive: true` | Injects Flutter runtime, native libraries, and generated Smali bootstrap classes (`activity_overlay`, etc.). |
+| `patch_manifest_and_config` | Core | `destructive: true` | Mutates `AndroidManifest.xml` in-place (activities, Application subclass, hardware acceleration, permissions). |
+| `recompile_align_and_sign` | Core | `destructive: true` | Rebuilds with apktool, 4-byte zipaligns, and cryptographically signs with apksigner (v1-v4). |
+| `get_agent_context` | Agent | `readOnly: true, idempotent: true` | Inspects Hermes+ persona, embedded rules, registered skills, and live session state. |
+| `update_agent_memory` | Agent | `destructive: true` | Records discovered hooks, notes, and patch history into memory and `.mcp_memory/session_state.json`. |
+| `query_memory_graph` | Agent | `readOnly: true, idempotent: true` | Searches and ranks recorded patches, security findings, native libraries, and multi-DEX roots. |
 
 ---
 
-### ⚡ Agent Prompts & Slash Commands
+### 🎮 The 4 Flutter Injection Modes
 
-- **`/scan`**: Diagnostic audit scan of decompiled APK workspace, entry points, Smali structure, and native ABIs.
-- **`/decompile`**: Disassemble target `.apk` into Smali bytecode and resources using `apktool`.
-- **`/inject`**: Execute Flutter runtime payload & Smali glue code injection into target APK.
-- **`/patch`**: Patch `AndroidManifest.xml` (application class, hardware acceleration, cleartext traffic, permissions).
-- **`/recompile`**: Repackage (`apktool b`), byte-align (`zipalign`), and cryptographically sign (`apksigner`) modified target.
-- **`/pipeline`**: Evidence-first decompilation ➔ analysis ➔ payload synthesis ➔ injection ➔ manifest patch ➔ build verification workflow.
-- **`/merge`**: Plan split-package compatibility without claiming arbitrary APK splits can be file-merged into a standalone APK.
-- **`/revert`**: Inspect patch-history and backup evidence; restoration is only available when verified patch-set artifacts exist.
-- **`/memory`**: Inspect active session memory state, historical patch logs, and allocated register frames.
+| Mode | Target Hook | Architectural Description |
+|---|---|---|
+| **`activity_overlay`** (Preferred) | `FlutterOverlayActivity` | Launches a dedicated Activity extending `FlutterActivity` reusing a pre-warmed cached engine. |
+| **`direct_application_hook`** | `Application.onCreate()` | Hooks directly into host Application lifecycle (and optional `attachBaseContext`), preserving host initialization. |
+| **`headless_engine`** | `BackgroundFlutterEngine` | Runs headless `FlutterEngine` in background for data channels, telemetry, or headless compute. |
+| **`view_tree_injection`** (Experimental) | Launcher `onCreate()` | Attaches programmatic `FlutterView` directly over the host activity decor view. |
+
+---
+
+### ⚡ Interactive Slash Prompts
+
+- **`/scan`**: Read-only diagnostic audit of APK workspace, security posture, and native libraries.
+- **`/decompile`**: Decompile APK into a fresh workspace and auto-install `AGENTS.md`.
+- **`/inject`**: Execute Flutter runtime payload and Smali bytecode injection.
+- **`/patch`**: Configure `AndroidManifest.xml` (components, permissions, hardware acceleration).
+- **`/recompile`**: Rebuild (`apktool b`), byte-align (`zipalign`), and sign (`apksigner`).
+- **`/pipeline`**: Guide the evidence-first end-to-end injection and verification sequence.
+- **`/merge`**: Plan split-package install sets with compatibility validation.
+- **`/revert`**: Inspect recorded patch history and verified backup requirements.
+- **`/memory`**: Inspect active session telemetry, patch history, and register allocations.
 - **`/hermes_guide`**: Display Hermes+ architecture rules and reverse engineering guidelines.
 
 ---
 
-### Required first step: activate Hermes+ (Universal Main Character)
-
-> **Required before repository work:** activate the Hermes+ character adapter for the client you use. Do not begin analysis, edits, command execution, or release work until the applicable adapter is active. This is a repository workflow requirement; it provides persistent agent context and does not replace normal code review, access control, or security controls.
-
-| Client | Required repository adapter | User action and verification |
-|---|---|---|
-| **Gemini CLI** | [`GEMINI.md`](GEMINI.md) | Open the repository as a workspace. Gemini CLI discovers workspace `GEMINI.md` context files; run `/memory show` if you need to inspect the loaded context.[1] |
-| **Antigravity** | [`.agents/rules/hermes-universal-main-character.md`](.agents/rules/hermes-universal-main-character.md) | In **Customizations → Rules**, add/select the workspace rule and set its activation to **Always On** before starting agent work.[2] |
-| **Cursor** | [`.cursor/rules/hermes-universal-main-character.mdc`](.cursor/rules/hermes-universal-main-character.mdc) | Keep the committed `.mdc` rule in the repository and reopen or reload the workspace. It is configured with `alwaysApply: true` for every agent chat.[3] |
-| **Claude Code** | [`CLAUDE.md`](CLAUDE.md) | Start Claude Code from the repository root. `CLAUDE.md` imports the portable Hermes+ contract; run `/context` to confirm the project memory file loaded.[4] |
-| **Other AGENTS-compatible clients** | [`AGENTS.md`](AGENTS.md) | Load the root adapter, which directs the client to the portable source contract at `.agents/AGENTS.md`. |
-
-### 🚀 Quick Start & MCP Client Configuration (v0.6.0)
-
-After completing the required character setup, install or run the MCP server:
+### 🚀 Quick Start & Client Configuration (v0.7.1)
 
 ```bash
 # Global installation
@@ -183,8 +172,7 @@ npx -y mcp-flutter-apk-injector@latest
 ```
 
 #### MCP stdio configuration
-
-Use the following server configuration in Claude Desktop, Antigravity, or another MCP client that accepts a stdio command configuration:
+Add to your client configuration (`claude_desktop_config.json`, Antigravity, Cursor, etc.):
 
 ```json
 {
@@ -200,154 +188,63 @@ Use the following server configuration in Claude Desktop, Antigravity, or anothe
 }
 ```
 
-#### Client setup references
-
-[1]: https://geminicli.com/docs/cli/gemini-md/ — Gemini CLI documentation: workspace `GEMINI.md` context and `/memory` inspection.
-[2]: https://antigravity.google/docs/rules-workflows — Google Antigravity documentation: workspace rules in `.agents/rules` and Always On activation.
-[3]: https://cursor.com/docs/rules — Cursor documentation: version-controlled `.cursor/rules/*.mdc` project rules and `alwaysApply` behavior.
-[4]: https://code.claude.com/docs/en/memory — Claude Code documentation: project `CLAUDE.md`, imports, and `/context` verification.
-
----
 ---
 
 ## 🇸🇦 التوثيق باللغة العربية
 
 ### 🌟 الملخص التنفيذي والمميزات الاستثنائية
 
-خادم **mcp-flutter-apk-injector** هو خادم **Model Context Protocol (MCP)** الأكثر تطوراً واحترافية عالمياً والمخصص لـ **الهندسة العكسية لتطبيقات أندرويد APK، إعادة هيكلة شفرات Smali/DEX، تتبع رموز JNI الأصلية، وحقن محرك تشغيل Flutter (Add-to-App v2)**.
+خادم **mcp-flutter-apk-injector** (الإصدار 0.7.1) هو خادم **Model Context Protocol (MCP)** الأكثر تقدماً وتطوراً عالمياً في مجال **الهندسة العكسية لتطبيقات أندرويد APK، إعادة هيكلة شفرات Smali/DEX، تتبع رموز JNI الأصلية، وحقن محرك Flutter (Add-to-App v2)**.
 
-مدعوماً بالمحرك الذكي **Hermes+ Master Agent Engine**، ينتقل هذا الخادم من مجرد خادم أدوات عادي إلى **منظومة ذكاء اصطناعي ذاتية التوجيه والتصحيح (Stateful Agentic System)** تمتلك ذاكرة جلسات مستمرة، ورسم بياني محلي قابل للبحث لتعديلات الشفرات، وموارد MCP أصلية، وأوامر تفاعلية مرنة ضد أخطاء المعاملات.
-
----
-
-### 🧠 منظومة الوكيل الذكي Hermes+ ومهارات MCP Skills
-
-#### 1. شخصية الوكيل المدمجة: `Hermes+`
-شخصية ذكاء اصطناعي مدمجة تخصصية في تحليل معمارية تطبيقات وألعاب أندرويد (ARM/ARM64)، فحص رموز JNI، موازنة سجلات Dalvik Stack (`v0`-`vN`, `p0`-`pN`)، وتعديل أصول المحركات مثل Lua/C++.
-
-#### 2. مهارات MCP المدمجة (`.agents/skills/`)
-* 🧠 **`hermes-apk-reverse-engineering`**: المهارة الرئيسية لإعادة هيكلة شفرات DEX/Smali، موازنة السجلات (`.registers N`)، زرع المكتبات الأصلية `.so` وحقن واجهات Flutter بدون انهيار التطبيق.
-* ⚡ **`mcp-toolchain-orchestrator`**: المهارة الرئيسية لإدارة وتنسيق أدوات MCP، المعالجة السريعة للأوامر بدون وسائط، وأتمتة الاختبارات والنشر.
-
-#### 📡 موارد MCP الأصلية (MCP Resources)
-- `resource://agent/persona`: هوية Hermes+ وقواعد الهندسة العكسية.
-- `resource://agent/rules`: بروتوكول الخطوات الخمس للهندسة العكسية.
-- `resource://agent/skills/hermes-apk-reverse-engineering`: وثيقة مهارة الهندسة العكسية.
-- `resource://agent/skills/mcp-toolchain-orchestrator`: وثيقة مهارة تنسيق الأدوات.
-- `resource://memory/session`: حالة الذاكرة الحية للجلسة الحالية بصيغة JSON.
-- `resource://memory/patch_history`: سجل تعديلات وترقيعات شفرات Smali و Manifest.
+مدعوماً بالمحرك الذكي **Hermes+ (Universal Main Character)**، يدمج الخادم وثيقة الشخصية الشاملة ([`HERMES.md`](HERMES.md)) والعقد الموحد ([`AGENTS.md`](AGENTS.md))، مع ميزة التثبيت التلقائي لملف `AGENTS.md` في مجلد أي تطبيق يتم تفكيكه، وفحص الأمان المتقدم (كشف مكافحة تصحيح الأخطاء Anti-Debug، كشف الروت Root Detection، فحص تثبيت الشهادات SSL Pinning، وحزم التشفير Packers)، وحائز على تقييم **5.0/5.0 Tier A+** لجميع الأدوات الـ 9 وفق معايير Glama.
 
 ---
 
-### ⚙️ مسار العمل الخماسي للهندسة العكسية (5-Step Pipeline)
+### 🧠 عقد Hermes+ والتثبيت التلقائي في التطبيقات
 
-```
-                       [تطبيق أندرويد APK Target / مساحة العمل]
-                                       │
-                                       ▼
- ┌───────────────────────────────────────────────────────────────────────────┐
- │ الخطوة 1: تفكيك البناء والأصول (decompile_apk)                            │
- │ استخراج شفرات Smali DEX، أشجار مكتبات lib/*.so، ملفات AXML والأصول      │
- └─────────────────────────────────────┬─────────────────────────────────────┘
-                                       │
-                                       ▼
- ┌───────────────────────────────────────────────────────────────────────────┐
- │ الخطوة 2: التتبع الدقيق لرموز JNI و Smali (analyze_injection_surface)     │
- │ تتبع معالجات النقر (View$OnClickListener)، معرفات 0x7f... R-ids،        │
- │ رموز JNI الأصلية، ونقاط خطاطيف سكربتات Lua                              │
- └─────────────────────────────────────┬─────────────────────────────────────┘
-                                       │
-                                       ▼
- ┌───────────────────────────────────────────────────────────────────────────┐
- │ الخطوة 3: زرع وحقن المحرك والحمولة (inject_flutter_runtime_and_smali)      │
- │ بناء أصول Flutter؛ موازنة سجلات الـ Stack (.registers N)؛                │
- │ حقن الواجهات بشكل أصيل ودون حدوث انهيار                                   │
- └─────────────────────────────────────┬─────────────────────────────────────┘
-                                       │
-                                       ▼
- ┌───────────────────────────────────────────────────────────────────────────┐
- │ الخطوة 4: تعديل الـ Manifest وإعادة التجميع (patch_manifest & recompile) │
- │ تعديل AndroidManifest.xml (التصاريح، كلاس التطبيق، المعماريات)؛          │
- │ إعادة التجميع (apktool b)، المحاذاة (zipalign)، التوقيع (apksigner)     │
- └─────────────────────────────────────┬─────────────────────────────────────┘
-                                       │
-                                       ▼
- ┌───────────────────────────────────────────────────────────────────────────┐
- │ الخطوة 5: التقرير المعماري وحفظ الذاكرة (Session Memory Persistence)       │
- │ توثيق مسارات Smali المعدلة، إزاحات مكتبات .so، القنوات المحقونة،        │
- │ وخريطة السجلات وموقع الـ APK النهائي المكتمل                             │
- └───────────────────────────────────────────────────────────────────────────┘
-```
+1. **المرجع المعماري الرئيسي ([`HERMES.md`](HERMES.md)):** يحدد القواعد الصارمة لحساب سجلات Smali (`.locals + params = .registers`) وتوزيع مكتبات `.so` وتجاوز آليات الحماية.
+2. **العقد الشامل للوكلاء ([`AGENTS.md`](AGENTS.md)):** عقد موحد متوافق مع كافة بيئات التطوير (Antigravity, Cursor, Claude, Gemini, Windsurf).
+3. **التثبيت التلقائي لعقد مساحة العمل:** عند استدعاء أداة `decompile_apk` أو `inject_flutter_runtime_and_smali`، يقوم الخادم تلقائياً بإنشاء وتثبيت ملف `AGENTS.md` داخل المجلد الجذري للتطبيق المستهدف لضمان استمرارية السياق الهندسي لأي وكيل ذكاء اصطناعي.
 
 ---
 
-### 🛠️ الأدوات الـ 9 الاحترافية في MCP
+### 🛠️ الأدوات الـ 9 الاحترافية (Glama 5.0/5.0 Tier A+)
 
-| اسم الأداة | الوظيفة التفصيلية والمخرجات |
-| --- | --- |
-| `decompile_apk` | تفكيك ملف APK الهدف إلى شفرات Smali bytecode ومكتبات نظام وموارد وفك تشفير AndroidManifest.xml، مع تحديث الذاكرة تلقائياً. |
-| `analyze_injection_surface` | مسح مساحة العمل وتحديد كلاس التطبيق والـ Activity الرئيسي ومواقع تحميل JNI والـ ABIs والتوصيات. |
-| `synthesize_flutter_payload` | استخراج أصول تشغيل Flutter (`libflutter.so`, `libapp.so`, `flutter_assets`) للحقن. |
-| `inject_flutter_runtime_and_smali` | زرع أصول وقواعد Smali ومكتبات النظام مع موازنة سجلات Stack. |
-| `patch_manifest_and_config` | تعديل `AndroidManifest.xml` بالتصاريح والتسريع البرمجي وكلاس التطبيق. |
-| `recompile_align_and_sign` | إعادة التجميع (`apktool b`) والمحاذاة (`zipalign`) والتوقيع الرقمي (`apksigner`). |
-| `get_agent_context` | استرجاع هوية Hermes+ والمهارات المتاحة وحالة الذاكرة الحية والسياق الحالي. |
-| `update_agent_memory` | تحديث ذاكرة الجلسة الحية بملحوظات أو أهداف أو سجلات تعديل جديدة. |
-| `query_memory_graph` | البحث والافتراش في سجلات الترقيع والذاكرة والمخرجات السابقة. |
-
----
-
-### 🎮 أنماط الحقن الـ 4 المتقدمة
-
-| نمط الحقن | الهدف الرئيسي في Smali | الوصف المعماري |
-| --- | --- | --- |
-| **`activity_overlay`** | `FlutterOverlayActivity` | تشغيل Activity مخصص يرث من `FlutterActivity` ويعيد استخدام المحرك الجاهز لتقديم واجهات سريعة فوق التطبيقات أو الألعاب. |
-| **`view_tree_injection`** | Launcher Activity `onCreate()` | إرفاق `FlutterView` برمجيًا داخل شجرة عناصر الـ Activity الرئيسية عند استدعاء `onCreate()`. |
-| **`headless_engine`** | `BackgroundFlutterEngine` | تشغيل محرك `FlutterEngine` في الخلفية بدون واجهة مستخدم لمعالجة قنوات البيانات والـ Telemetry. |
-| **`direct_application_hook`** | `Application.onCreate()` / `attachBaseContext()` | تعديل كلاس الـ `Application.onCreate()` أو `attachBaseContext()` الموجود مسبقًا في الـ Smali مباشرة دون الحاجة لتغيير `android:name` في الـ `AndroidManifest.xml`. |
+| اسم الأداة | النوع | الخصائص | الوظيفة الهندسية |
+|---|---|---|---|
+| `decompile_apk` | أساسية | تعديل (`destructive`) | تفكيك الـ APK إلى Smali وموارد ومكتبات مع **التثبيت التلقائي لـ `AGENTS.md`**. |
+| `analyze_injection_surface` | أساسية | قراءة فقط (`readOnly`) | فحص الكلاسات، مكتبات `.so` لكل معمارية، مكافحة الـ Debug، الروت، وتثبيت الشهادات. |
+| `synthesize_flutter_payload` | أساسية | تعديل (`destructive`) | تجميع مشروع Flutter إلى مكتبات أصلية وأصول مخصصة لمعماريات الهدف. |
+| `inject_flutter_runtime_and_smali` | أساسية | تعديل (`destructive`) | زرع محرك Flutter وشفرات Smali التمهيدية وموازنة سجلات الـ Stack. |
+| `patch_manifest_and_config` | أساسية | تعديل (`destructive`) | تعديل `AndroidManifest.xml` (الأنشطة، كلاس التطبيق، التسريع البرمجي، التصاريح). |
+| `recompile_align_and_sign` | أساسية | تعديل (`destructive`) | إعادة البناء بـ apktool، المحاذاة بـ zipalign، والتوقيع الرقمي بـ apksigner. |
+| `get_agent_context` | وكيل | قراءة فقط (`readOnly`) | قراءة هوية Hermes+، القواعد، المهارات، وحالة الذاكرة الحية. |
+| `update_agent_memory` | وكيل | تعديل (`destructive`) | حفظ الملاحظات وسجلات الترقيع في الذاكرة الحية وملف `.mcp_memory/session_state.json`. |
+| `query_memory_graph` | وكيل | قراءة فقط (`readOnly`) | البحث المصنف في سجلات الترقيع والنتائج الأمنية والمكتبات الأصلية. |
 
 ---
 
-### ⚡ أوامر Tigger والتفاعل السريع (Slash Commands)
-
-- **`/scan`**: فحص وتشخيص السطح القابل للحقن داخل مساحة عمل الـ APK وتحديد مكتبات النظام ودرجات الأمان.
-- **`/decompile`**: تفكيك ملف الـ APK الهدف إلى شفرات Smali وموارد باستخدام `apktool`.
-- **`/inject`**: تنفيذ حقن بيئة تشغيل Flutter ومكتبات النظام وتوليد شفرات الـ Smali التكيفية.
-- **`/patch`**: تعديل ملف `AndroidManifest.xml` (كلاس التطبيق، التسريع البرمجي، تصاريح الشبكة والـ Cleartext Traffic).
-- **`/recompile`**: إعادة تجميع التطبيق (`apktool b`)، محاذاة البيانات (`zipalign`) والتوقيع الرقمي (`apksigner`).
-- **`/pipeline`**: المسار الآلي الكامل الشامل: تفكيك ➔ تحليل ➔ بناء ➔ حقن ➔ تعديل ➔ إعادة تجميع وتوقيع.
-- **`/memory`**: فحص وتفتيش ذاكرة الجلسة الحية وسجل الترقيعات والمجموعات المسجلة.
-- **`/hermes_guide`**: عرض قواعد معمارية Hermes+ وإرشادات الهندسة العكسية.
-
----
-
-### 💻 متطلبات النظام
+### 💻 متطلبات النظام والتطوير
 
 - **Node.js >= 18.0.0**
-- **بيئة جافا / JDK** (مطلوبة لأدوات `apktool` و `apksigner`)
-- **أدوات بناء Android SDK** (`zipalign` و `apksigner` — يتم اكتشافها تلقائياً من `ANDROID_HOME` أو متغيرات النظام)
-- **apktool** مثبت على متغيرات النظام PATH
-- **Flutter SDK** (مطلوب فقط عند استدعاء أداة `synthesize_flutter_payload`)
-
----
-
-### 🧪 التطوير والاختبار
+- **Java JRE/JDK 11+** (لأدوات `apktool` و `apksigner`)
+- **Android SDK Build-Tools** (`zipalign` و `apksigner`)
+- **apktool** متاح على مسار النظام PATH
+- **Flutter SDK** (مطلوب عند بناء الحمولات عبر `synthesize_flutter_payload`)
 
 ```bash
-# تثبيت التبعيات المحلية
+# تثبيت التبعيات
 npm install
 
-# بناء مشروع TypeScript إلى dist/
-npm run build
-
-# فحص الأنواع دون إخراج
+# التحقق من الأنواع والأنماط
 npm run typecheck
-
-# فحص تنسيق الشفرة والأخطاء البرمجية
 npm run lint
 
-# تشغيل حزمة اختبارات Vitest (40 اختباراً)
+# تشغيل حزمة الاختبارات (52 اختباراً)
 npm test
+
+# بناء الحزمة النهائية
+npm run build
 ```
 
 ---

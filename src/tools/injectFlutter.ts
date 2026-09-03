@@ -4,9 +4,9 @@ import type { InjectFlutterParams } from "./schemas.js";
 
 export const injectFlutterTitle = "Inject Flutter runtime into APK workspace";
 export const injectFlutterDescription =
-  "Inject a synthesized Flutter payload and generated Smali bootstrap into a decoded APK workspace after decompile_apk and synthesize_flutter_payload have completed. " +
-  "This mutates workspaceDir by adding libraries, assets, and Smali files; run analyze_injection_surface first when the host lifecycle or ABI compatibility is uncertain. " +
-  "Choose activity_overlay for the supported cached-engine screen path, use direct_application_hook only for a resolvable host Application, and treat view_tree_injection as experimental because it requires a lifecycle-compatible host.";
+  "Inject a synthesized Flutter payload (lib/ and assets/) and generated Smali bootstrap classes into a decoded APK workspace. " +
+  "Mutates workspaceDir in-place by writing Smali classes, copying native libraries per ABI, and deploying Flutter assets; requires payloadDir containing valid Flutter binaries. " +
+  "Select injectionMode based on target structure: prefer activity_overlay for cached-engine screens, direct_application_hook for custom Application classes, headless_engine for background tasks, or view_tree_injection (experimental); enable nativeLibraryFallback to guard against missing ABI crashes.";
 
 export async function injectFlutter(
   params: InjectFlutterParams,

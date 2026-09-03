@@ -7,9 +7,9 @@ import type { SynthesizePayloadParams } from "./schemas.js";
 
 export const synthesizePayloadTitle = "Build Flutter runtime payload";
 export const synthesizePayloadDescription =
-  "Build a Flutter project into native libraries and flutter_assets for the selected Android ABIs, ready for injection into a decoded workspace. " +
-  "Use it after target ABI analysis and before injection when source Flutter code is available; use an existing validated payload directory instead when artifacts are already built. " +
-  "This invokes the local Flutter SDK and replaces the payload output directory, so expect build time, disk writes, and build diagnostics.";
+  "Compile a source Flutter project into platform native libraries (libflutter.so, libapp.so) and flutter_assets partitioned by target Android ABIs. " +
+  "Invokes the local Flutter CLI, writes compiled artifacts to outputDir (or system temp if omitted), and overwrites existing destination files; requires flutterProjectPath containing pubspec.yaml. " +
+  "Set targetAbis to match the target APK architectures discovered via analyze_injection_surface, choose buildMode ('release' for AOT production, 'debug' for JIT), and forward the emitted payloadDir to inject_flutter_runtime_and_smali.";
 
 export async function synthesizePayload(
   params: SynthesizePayloadParams,

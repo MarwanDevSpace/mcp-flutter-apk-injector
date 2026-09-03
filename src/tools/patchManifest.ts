@@ -4,9 +4,9 @@ import type { PatchManifestParams } from "./schemas.js";
 
 export const patchManifestTitle = "Apply Android manifest configuration";
 export const patchManifestDescription =
-  "Apply requested Flutter-related component, application, permission, and rendering changes to AndroidManifest.xml in a decoded workspace. " +
-  "Use it only after reviewing the injection surface and generated classes; it mutates the manifest in place, so use analyze_injection_surface instead when only inspection is needed. " +
-  "Review the structured delta before recompilation, especially for application-class, permission, exported-component, or network-security changes.";
+  "Configure AndroidManifest.xml in a decoded workspace by injecting Flutter activities, application subclass bindings, hardware acceleration, network security flags, and required permissions. " +
+  "Mutates AndroidManifest.xml in-place within workspaceDir; accepts customApplicationClass to rebind android:name, additionalPermissions to insert <uses-permission> tags, and boolean flags for usesCleartextTraffic, largeHeap, and hardwareAccelerated. " +
+  "Use after inject_flutter_runtime_and_smali to configure component declarations before packaging; use analyze_injection_surface instead when inspecting the manifest without changes.";
 
 export async function patchManifest(
   params: PatchManifestParams,
